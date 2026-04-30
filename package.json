@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.js",
+    "start:prod": "node index.js",
     "migrate": "node scripts/run-migrations.js"
   },
   "author": "M Zidane Firdaus",
