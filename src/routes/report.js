@@ -7,7 +7,9 @@ const {
     listRolesController,
     summaryTransactionsController,
     listProductTypesController,
-    productSummaryTransactionsController
+    productSummaryTransactionsController,
+    voaMonitoringReportController,
+    voaTransactionListReportController
 } = require("../controller");
 const validator = require("express-joi-validation").createValidator({});
 
@@ -36,6 +38,20 @@ const productSummaryTransactionsSchema = Joi.object({
     sort_date: Joi.string().allow("").optional(),
 });
 
+const voaMonitoringSchema = Joi.object({
+    start_date: Joi.date().iso().optional(),
+    end_date: Joi.date().iso().optional(),
+    detail_limit: Joi.number().integer().min(1).max(500).default(100),
+});
+
+const voaTransactionListSchema = Joi.object({
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(150).default(50),
+    search: Joi.string().allow("").optional(),
+    start_date: Joi.date().iso().optional(),
+    end_date: Joi.date().iso().optional(),
+});
+
 router.get('/product-types', auth, listProductTypesController);
 
 router.get(
@@ -50,6 +66,20 @@ router.get(
     auth,
     validator.query(productSummaryTransactionsSchema),
     productSummaryTransactionsController
+);
+
+router.get(
+    '/voa-monitoring',
+    auth,
+    validator.query(voaMonitoringSchema),
+    voaMonitoringReportController
+);
+
+router.get(
+    '/voa-transaction-list',
+    auth,
+    validator.query(voaTransactionListSchema),
+    voaTransactionListReportController
 );
 
 module.exports = router;

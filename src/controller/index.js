@@ -1,13 +1,19 @@
 const createDivisionController = require("./divisions/create-division.js");
 const createRolesController = require("./roles/create-roles.js");
 const registerController = require("./users/register.js");
+const createUserController = require("./users/create-user.js");
+const updateUserController = require("./users/update-user.js");
+const deleteUserController = require("./users/delete-user.js");
 const loginController = require("./users/login.js");
 const listUsersController = require("./users/list-users.js");
 const listUserWorkspacesController = require("./users/list-user-workspaces.js");
+const listDivisionsController = require("./divisions/list-division.js");
 const listRolesController = require("./roles/list-roles.js");
 const summaryTransactionsController = require("./report/summary-transaction.js");
 const listProductTypesController = require("./report/list-product-types.js");
 const productSummaryTransactionsController = require("./report/product-summary-transaction.js");
+const voaMonitoringReportController = require("./report/voa-monitoring-report.js");
+const voaTransactionListReportController = require("./report/voa-transaction-list-report.js");
 const listTicketsController = require("./plink-desk/list-tickets.js");
 const getTicketDetailController = require("./plink-desk/get-ticket-detail.js");
 const createTicketController = require("./plink-desk/create-ticket.js");
@@ -42,13 +48,19 @@ module.exports = {
     createDivisionController,
     createRolesController,
     registerController,
+    createUserController,
+    updateUserController,
+    deleteUserController,
     loginController,
     listUsersController,
     listUserWorkspacesController,
+    listDivisionsController,
     listRolesController,
     summaryTransactionsController,
     listProductTypesController,
     productSummaryTransactionsController,
+    voaMonitoringReportController,
+    voaTransactionListReportController,
     listTicketsController,
     getTicketDetailController,
     createTicketController,

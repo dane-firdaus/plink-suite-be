@@ -1,15 +1,21 @@
 const createDivisions = require("./divisions/create-division");
 const getUserByEmail = require("./users/get-user-by-email");
 const register = require("./users/register");
+const createUser = require("./users/create-user");
+const updateUser = require("./users/update-user");
+const deleteUser = require("./users/delete-user");
 const createRoles = require("./roles/create-roles");
 const listUsers = require("./users/list-users");
 const listUserWorkspaces = require("./users/list-user-workspaces");
+const listDivisions = require("./divisions/list-division");
 const listRoles = require("./roles/list-roles");
 const updateRoles = require("./roles/update-roles");
 const deleteRoles = require("./roles/delete-roles");
 const summaryTransactions = require("./report/summary-transactions");
 const listProductTypes = require("./report/list-product-types");
 const productSummaryTransactions = require("./report/product-summary-transactions");
+const voaMonitoringReport = require("./report/voa-monitoring-report");
+const voaTransactionListReport = require("./report/voa-transaction-list-report");
 const listTickets = require("./plink-desk/list-tickets");
 const getTicketDetail = require("./plink-desk/get-ticket-detail");
 const createTicket = require("./plink-desk/create-ticket");
@@ -43,15 +49,21 @@ module.exports = {
     createDivisions,
     getUserByEmail,
     register,
+    createUser,
+    updateUser,
+    deleteUser,
     createRoles,
     listUsers,
     listUserWorkspaces,
+    listDivisions,
     updateRoles,
     listRoles,
     deleteRoles,
     summaryTransactions,
     listProductTypes,
     productSummaryTransactions,
+    voaMonitoringReport,
+    voaTransactionListReport,
     listTickets,
     getTicketDetail,
     createTicket,

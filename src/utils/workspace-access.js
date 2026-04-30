@@ -82,6 +82,7 @@ const resolveDefaultWorkspace = (user, workspaceAccess) => {
 };
 
 module.exports = {
+  normalizeWorkspaceAccess,
   resolveWorkspaceAccess,
   resolveDefaultWorkspace,
 };

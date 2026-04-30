@@ -14,8 +14,20 @@ const crmRouter = require('./src/routes/crm');
 const { startOnboardingSyncPolling } = require('./src/utils/onboarding-sync-poller');
 
 const port = process.env.PORT || 3099;
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(204);
+    }
+
+    return next();
+});
 
 app.use('/api/v1/division', divisionRouter)
 app.use('/api/v1/roles', roleRouter)
@@ -31,13 +43,6 @@ app.get('/', (req, res) => {
         version: package.version,
         description: package.description
     });
-})
-
-app.use(cors());
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 })
 
 http.createServer(app).listen(port, () => {

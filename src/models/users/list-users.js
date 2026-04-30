@@ -42,8 +42,11 @@ const listUsers = async ({ email, name, limit = 10, page = 1 }) => {
       SELECT 
         u.id,
         u.fullname,
+        u.username,
         u.email,
         u.uid,
+        u.role_id,
+        u.division_id,
         u.created_at,
         u.updated_at,
         ${workspaceAccessSelect},

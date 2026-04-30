@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Joi = require("joi");
-const {createDivisionController} = require("../controller");
+const auth = require("../middleware/auth");
+const {createDivisionController, listDivisionsController} = require("../controller");
 const validator = require("express-joi-validation").createValidator({});
 
 const createDivisionSchema = Joi.object({
@@ -11,6 +12,7 @@ const createDivisionSchema = Joi.object({
 
 
 router.post('/create', validator.body(createDivisionSchema), createDivisionController);
+router.get('/list-divisions', auth, listDivisionsController);
 
 
 module.exports = router;
