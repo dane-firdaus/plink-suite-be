@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: .
+    container_name: management-dashboard-backend
+    env_file:
+      - ./.env
+    environment:
+      RUN_MIGRATIONS: "true"
+      NODE_ENV: production
+    ports:
+      - "4099:4099"
+    restart: unless-stopped
