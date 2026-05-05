@@ -16,6 +16,9 @@ const listProductTypes = require("./report/list-product-types");
 const productSummaryTransactions = require("./report/product-summary-transactions");
 const voaMonitoringReport = require("./report/voa-monitoring-report");
 const voaTransactionListReport = require("./report/voa-transaction-list-report");
+const reconDashboardReport = require("./report/recon-dashboard-report");
+const financeVipotReport = require("./report/finance-vipot-report");
+const financeVipotDetailReport = require("./report/finance-vipot-detail-report");
 const listTickets = require("./plink-desk/list-tickets");
 const getTicketDetail = require("./plink-desk/get-ticket-detail");
 const createTicket = require("./plink-desk/create-ticket");
@@ -64,6 +67,9 @@ module.exports = {
     productSummaryTransactions,
     voaMonitoringReport,
     voaTransactionListReport,
+    reconDashboardReport,
+    financeVipotReport,
+    financeVipotDetailReport,
     listTickets,
     getTicketDetail,
     createTicket,

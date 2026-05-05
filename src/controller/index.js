@@ -14,6 +14,9 @@ const listProductTypesController = require("./report/list-product-types.js");
 const productSummaryTransactionsController = require("./report/product-summary-transaction.js");
 const voaMonitoringReportController = require("./report/voa-monitoring-report.js");
 const voaTransactionListReportController = require("./report/voa-transaction-list-report.js");
+const reconDashboardReportController = require("./report/recon-dashboard-report.js");
+const financeVipotReportController = require("./report/finance-vipot-report.js");
+const financeVipotDetailReportController = require("./report/finance-vipot-detail-report.js");
 const listTicketsController = require("./plink-desk/list-tickets.js");
 const getTicketDetailController = require("./plink-desk/get-ticket-detail.js");
 const createTicketController = require("./plink-desk/create-ticket.js");
@@ -61,6 +64,9 @@ module.exports = {
     productSummaryTransactionsController,
     voaMonitoringReportController,
     voaTransactionListReportController,
+    reconDashboardReportController,
+    financeVipotReportController,
+    financeVipotDetailReportController,
     listTicketsController,
     getTicketDetailController,
     createTicketController,

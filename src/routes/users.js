@@ -35,9 +35,9 @@ const adminUserSchema = Joi.object({
     division_id: Joi.string().required().max(100),
     fullname: Joi.string().required().max(150),
     workspace_access: Joi.array().items(
-      Joi.string().valid('plink-one', 'plink-desk', 'plink-crm')
+      Joi.string().valid('plink-one', 'plink-desk', 'plink-crm', 'plink-recon', 'plink-books')
     ).min(1).required(),
-    default_workspace: Joi.string().valid('plink-one', 'plink-desk', 'plink-crm').required(),
+    default_workspace: Joi.string().valid('plink-one', 'plink-desk', 'plink-crm', 'plink-recon', 'plink-books').required(),
 });
 
 const createUserSchema = adminUserSchema.keys({

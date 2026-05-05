@@ -1,4 +1,4 @@
-const ALL_WORKSPACES = ["plink-one", "plink-desk", "plink-crm"];
+const ALL_WORKSPACES = ["plink-one", "plink-desk", "plink-crm", "plink-recon", "plink-books"];
 
 const normalizeWorkspaceAccess = (value) => {
   if (!Array.isArray(value)) {
@@ -23,7 +23,7 @@ const inferWorkspaceAccessFromRole = (roleName = "") => {
     normalizedRole.includes("director") ||
     normalizedRole.includes("management")
   ) {
-    return ["plink-one", "plink-desk", "plink-crm"];
+    return ["plink-one", "plink-desk", "plink-crm", "plink-recon", "plink-books"];
   }
 
   if (
@@ -41,6 +41,14 @@ const inferWorkspaceAccessFromRole = (roleName = "") => {
     normalizedRole.includes("bd")
   ) {
     return ["plink-crm"];
+  }
+
+  if (
+    normalizedRole.includes("recon") ||
+    normalizedRole.includes("finance") ||
+    normalizedRole.includes("settlement")
+  ) {
+    return ["plink-recon", "plink-books"];
   }
 
   return ["plink-one"];

@@ -33,32 +33,6 @@ const getHealthStatus = ({ issueRatePct, potentialRefundCount, failedCount, miss
   return "healthy";
 };
 
-const getIssueFlags = (row) => {
-  const flags = [];
-
-  if (row.status_indikator === "POTENTIAL REFUND") {
-    flags.push("Potential Refund");
-  }
-
-  if (row.payment_status === "FAILED") {
-    flags.push("Failed Payment");
-  }
-
-  if (!row.billing_id) {
-    flags.push("Missing Billing ID");
-  }
-
-  if (!row.ntb) {
-    flags.push("Missing NTB");
-  }
-
-  if (!row.ntpn) {
-    flags.push("Missing NTPN");
-  }
-
-  return flags;
-};
-
 const getDefaultStartDate = (maxDateValue) => {
   const maxDate = new Date(maxDateValue);
   return new Date(
@@ -70,6 +44,59 @@ const getDefaultStartDate = (maxDateValue) => {
   );
 };
 
+const normalizeDateKey = (value) => {
+  const iso = new Date(value).toISOString();
+  return iso.slice(0, 10);
+};
+
+const buildIssueSample = (row, issueType) => {
+  if (issueType === "potential_refund") {
+    return {
+      payment_method: null,
+      terminal: null,
+      transaction_date: row.transaction_date,
+      cutoffdate: null,
+      ecomm_ref_no: row.ecomm_ref_no || null,
+      bank_ref_no: null,
+      card_type: null,
+      card_no: null,
+      amount: toNumber(row.amount),
+      net_amount: toNumber(row.amount),
+      merc_ref_no: row.merc_ref_no || null,
+      billing_id: null,
+      ntb: null,
+      ntpn: null,
+      payment_status: "PENDING",
+      status_indikator: "POTENTIAL REFUND",
+      issue_flags: ["Potential Refund"],
+      source_view: "v_potential_refund_voa",
+    };
+  }
+
+  const isRefunded = row.payment_status === "SUCCESS";
+
+  return {
+    payment_method: null,
+    terminal: null,
+    transaction_date: row.transaction_date,
+    cutoffdate: row.cutoffdate || null,
+    ecomm_ref_no: row.ecomm_ref_no || null,
+    bank_ref_no: row.bank_ref_no || null,
+    card_type: null,
+    card_no: row.card_no || null,
+    amount: toNumber(row.amount),
+    net_amount: toNumber(row.net_amount),
+    merc_ref_no: row.merc_ref_no || null,
+    billing_id: null,
+    ntb: null,
+    ntpn: null,
+    payment_status: row.payment_status || null,
+    status_indikator: isRefunded ? "REFUNDED" : "FAILED",
+    issue_flags: [isRefunded ? "Refunded" : "Failed Payment"],
+    source_view: "v_refund_voa",
+  };
+};
+
 const getVoaMonitoringReport = async ({
   startDate,
   endDate,
@@ -78,9 +105,10 @@ const getVoaMonitoringReport = async ({
   const pool = await reportPoolConnect;
 
   const maxDateResult = await pool.request().query(`
-    SELECT MAX(CAST(transaction_date AS date)) AS max_transaction_date
-    FROM v_rekon_voa_new
-    WHERE transaction_date IS NOT NULL
+    SELECT TOP 1 TRY_CONVERT(date, trxdate) AS max_transaction_date
+    FROM v_lapharianvoa
+    WHERE TRY_CONVERT(date, trxdate) IS NOT NULL
+    ORDER BY TRY_CONVERT(date, trxdate) DESC
   `);
 
   const maxTransactionDate = maxDateResult.recordset[0]?.max_transaction_date;
@@ -95,60 +123,142 @@ const getVoaMonitoringReport = async ({
 
   const effectiveStartDate = startDate || getDefaultStartDate(maxTransactionDate);
   const effectiveEndDate = endDate || maxTransactionDate;
+  const safeDetailLimit = Math.max(Number(detailLimit) || DEFAULT_DETAIL_LIMIT, 1);
+  const detailSlice = Math.max(Math.ceil(safeDetailLimit / 2), 1);
 
   const dailyRequest = pool.request();
   dailyRequest.input("startDate", sql.Date, effectiveStartDate);
   dailyRequest.input("endDate", sql.Date, effectiveEndDate);
 
-  const dailyResult = await dailyRequest.query(`
-    SELECT
-      CAST(transaction_date AS date) AS trx_date,
-      COUNT(*) AS total_rows,
-      SUM(CASE WHEN status_indikator = 'MATCHED' AND payment_status = 'SUCCESS' THEN 1 ELSE 0 END) AS matched_success,
-      SUM(CASE WHEN status_indikator = 'POTENTIAL REFUND' THEN 1 ELSE 0 END) AS potential_refund,
-      SUM(CASE WHEN status_indikator = 'REFUNDED' THEN 1 ELSE 0 END) AS refunded,
-      SUM(CASE WHEN payment_status = 'FAILED' THEN 1 ELSE 0 END) AS failed_count,
-      SUM(
-        CASE
-          WHEN status_indikator = 'MATCHED'
-            AND payment_status = 'SUCCESS'
-            AND (
-              billing_id IS NULL OR LTRIM(RTRIM(billing_id)) = ''
-              OR ntb IS NULL OR LTRIM(RTRIM(ntb)) = ''
-              OR ntpn IS NULL OR LTRIM(RTRIM(ntpn)) = ''
-            )
-          THEN 1
-          ELSE 0
-        END
-      ) AS missing_reference_on_success
-    FROM v_rekon_voa_new
-    WHERE CAST(transaction_date AS date) >= @startDate
-      AND CAST(transaction_date AS date) <= @endDate
-    GROUP BY CAST(transaction_date AS date)
-    ORDER BY trx_date DESC
-  `);
+  const potentialRequest = pool.request();
+  potentialRequest.input("startDate", sql.Date, effectiveStartDate);
+  potentialRequest.input("endDate", sql.Date, effectiveEndDate);
+
+  const refundRequest = pool.request();
+  refundRequest.input("startDate", sql.Date, effectiveStartDate);
+  refundRequest.input("endDate", sql.Date, effectiveEndDate);
+
+  const potentialSampleRequest = pool.request();
+  potentialSampleRequest.input("startDate", sql.Date, effectiveStartDate);
+  potentialSampleRequest.input("endDate", sql.Date, effectiveEndDate);
+  potentialSampleRequest.input("detailLimit", sql.Int, detailSlice);
+
+  const refundSampleRequest = pool.request();
+  refundSampleRequest.input("startDate", sql.Date, effectiveStartDate);
+  refundSampleRequest.input("endDate", sql.Date, effectiveEndDate);
+  refundSampleRequest.input("detailLimit", sql.Int, detailSlice);
+
+  const [
+    dailyResult,
+    potentialResult,
+    refundResult,
+    potentialSampleResult,
+    refundSampleResult,
+  ] = await Promise.all([
+    dailyRequest.query(`
+      SELECT
+        TRY_CONVERT(date, trxdate) AS trx_date,
+        ISNULL(vol_ca, 0) AS vol_ca,
+        ISNULL(vol_cc, 0) AS vol_cc
+      FROM v_lapharianvoa
+      WHERE TRY_CONVERT(date, trxdate) >= @startDate
+        AND TRY_CONVERT(date, trxdate) <= @endDate
+      ORDER BY TRY_CONVERT(date, trxdate) DESC
+    `),
+    potentialRequest.query(`
+      SELECT
+        TRY_CONVERT(date, transaction_date) AS trx_date,
+        COUNT(*) AS total_rows
+      FROM v_potential_refund_voa
+      WHERE TRY_CONVERT(date, transaction_date) >= @startDate
+        AND TRY_CONVERT(date, transaction_date) <= @endDate
+      GROUP BY TRY_CONVERT(date, transaction_date)
+    `),
+    refundRequest.query(`
+      SELECT
+        CAST(transaction_date AS date) AS trx_date,
+        payment_status,
+        COUNT(*) AS total_rows
+      FROM v_refund_voa
+      WHERE transaction_date >= @startDate
+        AND transaction_date < DATEADD(DAY, 1, @endDate)
+      GROUP BY CAST(transaction_date AS date), payment_status
+    `),
+    potentialSampleRequest.query(`
+      SELECT TOP (@detailLimit)
+        transaction_date,
+        ecomm_ref_no,
+        merc_ref_no,
+        amount
+      FROM v_potential_refund_voa
+      WHERE TRY_CONVERT(date, transaction_date) >= @startDate
+        AND TRY_CONVERT(date, transaction_date) <= @endDate
+      ORDER BY TRY_CONVERT(date, transaction_date) DESC, ecomm_ref_no DESC
+    `),
+    refundSampleRequest.query(`
+      SELECT TOP (@detailLimit)
+        transaction_date,
+        cutoffdate,
+        merc_ref_no,
+        ecomm_ref_no,
+        payment_status,
+        bank_ref_no,
+        card_no,
+        amount,
+        net_amount
+      FROM v_refund_voa
+      WHERE transaction_date >= @startDate
+        AND transaction_date < DATEADD(DAY, 1, @endDate)
+      ORDER BY transaction_date DESC, ecomm_ref_no DESC
+    `),
+  ]);
+
+  const potentialByDate = new Map();
+  for (const row of potentialResult.recordset || []) {
+    potentialByDate.set(normalizeDateKey(row.trx_date), toNumber(row.total_rows));
+  }
+
+  const refundByDate = new Map();
+  for (const row of refundResult.recordset || []) {
+    const dateKey = normalizeDateKey(row.trx_date);
+    const current = refundByDate.get(dateKey) || { failed_count: 0, refunded: 0 };
+
+    if (row.payment_status === "SUCCESS") {
+      current.refunded += toNumber(row.total_rows);
+    } else {
+      current.failed_count += toNumber(row.total_rows);
+    }
+
+    refundByDate.set(dateKey, current);
+  }
 
   const dailySummary = (dailyResult.recordset || []).map((row) => {
+    const dateKey = normalizeDateKey(row.trx_date);
+    const totalRows = toNumber(row.vol_ca) + toNumber(row.vol_cc);
+    const potentialRefund = potentialByDate.get(dateKey) || 0;
+    const refundInfo = refundByDate.get(dateKey) || { failed_count: 0, refunded: 0 };
+    const failedCount = refundInfo.failed_count;
+    const refunded = refundInfo.refunded;
+    const matchedSuccess = Math.max(totalRows - potentialRefund - failedCount, 0);
     const issueRatePct = Number(
-      ((Number(row.potential_refund || 0) + Number(row.failed_count || 0)) * 100) /
-        Number(row.total_rows || 1)
-    ).toFixed(2);
+      (((potentialRefund + failedCount) * 100) / Number(totalRows || 1)).toFixed(2)
+    );
 
     return {
       trx_date: row.trx_date,
       trx_date_label: formatDateLabel(row.trx_date),
-      total_rows: toNumber(row.total_rows),
-      matched_success: toNumber(row.matched_success),
-      potential_refund: toNumber(row.potential_refund),
-      refunded: toNumber(row.refunded),
-      failed_count: toNumber(row.failed_count),
-      missing_reference_on_success: toNumber(row.missing_reference_on_success),
-      issue_rate_pct: Number(issueRatePct),
+      total_rows: totalRows,
+      matched_success: matchedSuccess,
+      potential_refund: potentialRefund,
+      refunded,
+      failed_count: failedCount,
+      missing_reference_on_success: 0,
+      issue_rate_pct: issueRatePct,
       health_status: getHealthStatus({
         issueRatePct,
-        potentialRefundCount: row.potential_refund,
-        failedCount: row.failed_count,
-        missingReferenceOnSuccess: row.missing_reference_on_success,
+        potentialRefundCount: potentialRefund,
+        failedCount,
+        missingReferenceOnSuccess: 0,
       }),
     };
   });
@@ -181,54 +291,12 @@ const getVoaMonitoringReport = async ({
     ).toFixed(2)
   );
 
-  const detailRequest = pool.request();
-  detailRequest.input("startDate", sql.Date, effectiveStartDate);
-  detailRequest.input("endDate", sql.Date, effectiveEndDate);
-  detailRequest.input("detailLimit", sql.Int, Number(detailLimit) || DEFAULT_DETAIL_LIMIT);
-
-  const detailResult = await detailRequest.query(`
-    SELECT TOP (@detailLimit)
-      payment_method,
-      terminal,
-      transaction_date,
-      cutoffdate,
-      ecomm_ref_no,
-      bank_ref_no,
-      card_type,
-      card_no,
-      amount,
-      net_amount,
-      merc_ref_no,
-      billing_id,
-      ntb,
-      ntpn,
-      payment_status,
-      status_indikator
-    FROM v_rekon_voa_new
-    WHERE CAST(transaction_date AS date) >= @startDate
-      AND CAST(transaction_date AS date) <= @endDate
-      AND (
-        status_indikator = 'POTENTIAL REFUND'
-        OR payment_status = 'FAILED'
-        OR (
-          status_indikator = 'MATCHED'
-          AND payment_status = 'SUCCESS'
-          AND (
-            billing_id IS NULL OR LTRIM(RTRIM(billing_id)) = ''
-            OR ntb IS NULL OR LTRIM(RTRIM(ntb)) = ''
-            OR ntpn IS NULL OR LTRIM(RTRIM(ntpn)) = ''
-          )
-        )
-      )
-    ORDER BY transaction_date DESC, ecomm_ref_no DESC
-  `);
-
-  const issueSamples = (detailResult.recordset || []).map((row) => ({
-    ...row,
-    amount: toNumber(row.amount),
-    net_amount: toNumber(row.net_amount),
-    issue_flags: getIssueFlags(row),
-  }));
+  const issueSamples = [
+    ...(potentialSampleResult.recordset || []).map((row) => buildIssueSample(row, "potential_refund")),
+    ...(refundSampleResult.recordset || []).map((row) => buildIssueSample(row, "refund")),
+  ]
+    .sort((left, right) => new Date(right.transaction_date) - new Date(left.transaction_date))
+    .slice(0, safeDetailLimit);
 
   return {
     summary: {
@@ -245,6 +313,7 @@ const getVoaMonitoringReport = async ({
           missingReferenceOnSuccess: windowTotals.missing_reference_on_success,
         }),
       },
+      source: "fast-monitoring-views",
     },
     daily_summary: dailySummary,
     issue_samples: issueSamples,

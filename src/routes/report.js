@@ -9,7 +9,10 @@ const {
     listProductTypesController,
     productSummaryTransactionsController,
     voaMonitoringReportController,
-    voaTransactionListReportController
+    voaTransactionListReportController,
+    reconDashboardReportController,
+    financeVipotReportController,
+    financeVipotDetailReportController
 } = require("../controller");
 const validator = require("express-joi-validation").createValidator({});
 
@@ -52,6 +55,18 @@ const voaTransactionListSchema = Joi.object({
     end_date: Joi.date().iso().optional(),
 });
 
+const reconDashboardSchema = Joi.object({
+    snapshot_date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).optional(),
+});
+
+const financeVipotSchema = Joi.object({
+    transaction_date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).optional(),
+});
+
+const financeVipotDetailSchema = Joi.object({
+    rekon_date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).optional(),
+});
+
 router.get('/product-types', auth, listProductTypesController);
 
 router.get(
@@ -80,6 +95,27 @@ router.get(
     auth,
     validator.query(voaTransactionListSchema),
     voaTransactionListReportController
+);
+
+router.get(
+    '/recon-dashboard',
+    auth,
+    validator.query(reconDashboardSchema),
+    reconDashboardReportController
+);
+
+router.get(
+    '/finance-vipot',
+    auth,
+    validator.query(financeVipotSchema),
+    financeVipotReportController
+);
+
+router.get(
+    '/finance-vipot-detail',
+    auth,
+    validator.query(financeVipotDetailSchema),
+    financeVipotDetailReportController
 );
 
 module.exports = router;
