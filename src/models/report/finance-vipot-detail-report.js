@@ -63,9 +63,10 @@ const getFinanceVipotDetailReport = async ({ rekonDate }) => {
 
     return request.query(`
       SELECT
+        merchant_name,
+        settle_flag,
         bank_account,
         bank_name,
-        settle_flag,
         COUNT(*) AS volume,
         SUM(CAST(transfer_amt AS decimal(18,2))) AS amount,
         SUM(CAST(mdr_1 AS decimal(18,2))) AS mdr_total,
@@ -75,8 +76,8 @@ const getFinanceVipotDetailReport = async ({ rekonDate }) => {
         SUM(CAST(transfer_amt AS decimal(18,2))) AS transfer_amt_final
       FROM v_rk_jan23
       WHERE CONVERT(varchar(10), transaction_date, 23) = @rekonDate
-      GROUP BY bank_account, bank_name, settle_flag
-      ORDER BY amount DESC, bank_account ASC, bank_name ASC
+      GROUP BY merchant_name, settle_flag, bank_account, bank_name
+      ORDER BY amount DESC, merchant_name ASC, bank_account ASC, bank_name ASC
     `);
   };
 
@@ -97,6 +98,7 @@ const getFinanceVipotDetailReport = async ({ rekonDate }) => {
   }
 
   const rows = (detailResult.recordset || []).map((row) => ({
+    merchant_name: row.merchant_name || "-",
     bank_account: row.bank_account || "-",
     bank_name: row.bank_name || "-",
     settle_flag: row.settle_flag || "-",
