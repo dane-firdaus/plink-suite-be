@@ -32,7 +32,7 @@ const normalizeDate = (value) => {
 
 const getLatestTransactionDate = async (pool) => {
   const result = await pool.request().query(`
-    SELECT MAX(recon_date) AS latest_transaction_date
+    SELECT MAX(rekon_date) AS latest_transaction_date
     FROM v_settle_jan23
   `);
 
