@@ -67,6 +67,7 @@ const ticketSchema = Joi.object({
   detail_2: Joi.string().trim().allow("").default(""),
   bank: Joi.string().trim().max(100).allow("").default(""),
   detail_category_code: Joi.string().trim().max(20).allow("").default(""),
+  first_time_response: Joi.alternatives().try(Joi.date(), Joi.string().allow(""), Joi.valid(null)).optional(),
   note_detail: Joi.string().trim().allow("").default(""),
   handling_sop_code: Joi.string().trim().allow("").default(""),
   investigation_process: Joi.string().trim().allow("").default(""),

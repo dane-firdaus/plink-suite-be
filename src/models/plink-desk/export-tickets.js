@@ -1,5 +1,5 @@
 const dbPool = require("../../config/db");
-const { TICKET_BASE_SELECT } = require("./shared");
+const { getTicketBaseSelect } = require("./shared");
 
 const exportTickets = async ({
   search = "",
@@ -18,9 +18,10 @@ const exportTickets = async ({
   const normalizedDateTo = date_to || null;
 
   try {
+    const ticketBaseSelect = await getTicketBaseSelect(client);
     const result = await client.query(
       `
-        ${TICKET_BASE_SELECT}
+        ${ticketBaseSelect}
         WHERE
           (
             COALESCE($1, '') = ''

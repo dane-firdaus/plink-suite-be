@@ -89,7 +89,7 @@ const createTicketExportWorkbook = async (tickets) => {
   const worksheet = templateWorksheet;
   worksheet.name = "CALLCENTER LOGS";
   const templateRowNumber = 2;
-  const maxColumns = 18;
+  const maxColumns = 19;
   const templateValues = [];
   const headerValues = [];
   const templateStyle = {
@@ -102,32 +102,33 @@ const createTicketExportWorkbook = async (tickets) => {
   for (let col = 1; col <= maxColumns; col += 1) {
     const headerCell = templateWorksheet.getRow(1).getCell(col);
     const cell = templateWorksheet.getRow(templateRowNumber).getCell(col);
-    const columnLetter = templateWorksheet.getColumn(col).letter;
 
-    worksheet.getColumn(col).width = templateWorksheet.getColumn(col).width;
-    if (templateWorksheet.getColumn(col).style) {
+    const templateColumn = templateWorksheet.getColumn(Math.min(col, 18));
+
+    worksheet.getColumn(col).width = templateColumn.width;
+    if (templateColumn.style) {
       worksheet.getColumn(col).style = JSON.parse(
-        JSON.stringify(templateWorksheet.getColumn(col).style)
+        JSON.stringify(templateColumn.style)
       );
     }
 
-    headerValues[col] = headerCell.value;
+    headerValues[col] = col === 19 ? "First Time Response" : headerCell.value;
     templateValues[col] = cell.value;
     templateStyle.headerCells[col] = {
-      style: headerCell.style,
-      numFmt: headerCell.numFmt,
-      alignment: headerCell.alignment,
-      border: headerCell.border,
-      fill: headerCell.fill,
-      font: headerCell.font,
+      style: (col === 19 ? templateWorksheet.getRow(1).getCell(18) : headerCell).style,
+      numFmt: (col === 19 ? templateWorksheet.getRow(1).getCell(18) : headerCell).numFmt,
+      alignment: (col === 19 ? templateWorksheet.getRow(1).getCell(18) : headerCell).alignment,
+      border: (col === 19 ? templateWorksheet.getRow(1).getCell(18) : headerCell).border,
+      fill: (col === 19 ? templateWorksheet.getRow(1).getCell(18) : headerCell).fill,
+      font: (col === 19 ? templateWorksheet.getRow(1).getCell(18) : headerCell).font,
     };
     templateStyle.cells[col] = {
-      style: cell.style,
-      numFmt: cell.numFmt,
-      alignment: cell.alignment,
-      border: cell.border,
-      fill: cell.fill,
-      font: cell.font,
+      style: (col === 19 ? templateWorksheet.getRow(templateRowNumber).getCell(18) : cell).style,
+      numFmt: (col === 19 ? templateWorksheet.getRow(templateRowNumber).getCell(18) : cell).numFmt,
+      alignment: (col === 19 ? templateWorksheet.getRow(templateRowNumber).getCell(18) : cell).alignment,
+      border: (col === 19 ? templateWorksheet.getRow(templateRowNumber).getCell(18) : cell).border,
+      fill: (col === 19 ? templateWorksheet.getRow(templateRowNumber).getCell(18) : cell).fill,
+      font: (col === 19 ? templateWorksheet.getRow(templateRowNumber).getCell(18) : cell).font,
     };
   }
 
@@ -176,6 +177,7 @@ const createTicketExportWorkbook = async (tickets) => {
       row.getCell(16).value = buildInvestigationProcess(ticket);
       row.getCell(17).value = formatExcelDate(ticket.closed_at || ticket.resolved_at);
       row.getCell(18).value = formatExcelDate(ticket.updated_at || ticket.created_at);
+      row.getCell(19).value = formatExcelDate(ticket.first_time_response);
       row.commit();
     });
   }

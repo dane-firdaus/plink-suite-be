@@ -1,13 +1,14 @@
 const dbPool = require("../../config/db");
-const { TICKET_BASE_SELECT } = require("./shared");
+const { getTicketBaseSelect } = require("./shared");
 
 const getTicketDetail = async (ticketId) => {
   const client = await dbPool.connect();
 
   try {
+    const ticketBaseSelect = await getTicketBaseSelect(client);
     const ticketResult = await client.query(
       `
-        ${TICKET_BASE_SELECT}
+        ${ticketBaseSelect}
         WHERE st.id = $1
       `,
       [ticketId]

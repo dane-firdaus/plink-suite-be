@@ -1,5 +1,6 @@
 const { v4: uuid } = require("uuid");
 const dbPool = require("../../config/db");
+const { hasSupportTicketColumn } = require("./shared");
 
 const updateTicket = async (ticketId, payload) => {
   const client = await dbPool.connect();
@@ -25,6 +26,10 @@ const updateTicket = async (ticketId, payload) => {
       (nextStatus === "resolved" || nextStatus === "closed") && !existing.resolved_at;
     const shouldClearResolvedAt =
       existing.resolved_at && !["resolved", "closed"].includes(nextStatus);
+    const hasFirstTimeResponse = await hasSupportTicketColumn(client, "first_time_response");
+    const firstTimeResponseSet = hasFirstTimeResponse
+      ? "first_time_response = $23,"
+      : "";
 
     const updatedResult = await client.query(
       `
@@ -51,10 +56,11 @@ const updateTicket = async (ticketId, payload) => {
           detail_2 = $20,
           bank = $21,
           detail_category_code = $22,
-          note_detail = $23,
-          handling_sop_code = $24,
-          investigation_process = $25,
-          closed_at = $26
+          ${firstTimeResponseSet}
+          note_detail = $24,
+          handling_sop_code = $25,
+          investigation_process = $26,
+          closed_at = $27
         WHERE id = $1
         RETURNING *
       `,
@@ -81,6 +87,7 @@ const updateTicket = async (ticketId, payload) => {
         payload.detail_2,
         payload.bank,
         payload.detail_category_code,
+        payload.first_time_response || null,
         payload.note_detail,
         payload.handling_sop_code,
         payload.investigation_process,

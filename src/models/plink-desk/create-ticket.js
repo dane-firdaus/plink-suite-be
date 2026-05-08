@@ -1,5 +1,6 @@
 const { v4: uuid } = require("uuid");
 const dbPool = require("../../config/db");
+const { hasSupportTicketColumn } = require("./shared");
 
 const createTicket = async (payload) => {
   const client = await dbPool.connect();
@@ -22,6 +23,9 @@ const createTicket = async (payload) => {
     const now = new Date();
     const resolvedAt =
       payload.status === "resolved" || payload.status === "closed" ? now : null;
+    const hasFirstTimeResponse = await hasSupportTicketColumn(client, "first_time_response");
+    const firstTimeResponseColumns = hasFirstTimeResponse ? ", first_time_response" : "";
+    const firstTimeResponseValues = hasFirstTimeResponse ? ", $30" : "";
 
     const ticketResult = await client.query(
       `
@@ -55,9 +59,11 @@ const createTicket = async (payload) => {
           handling_sop_code,
           investigation_process,
           closed_at
+          ${firstTimeResponseColumns}
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
           $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29
+          ${firstTimeResponseValues}
         )
         RETURNING *
       `,
@@ -91,6 +97,7 @@ const createTicket = async (payload) => {
         payload.handling_sop_code,
         payload.investigation_process,
         payload.status === "closed" ? now : null,
+        payload.first_time_response || null,
       ]
     );
 
