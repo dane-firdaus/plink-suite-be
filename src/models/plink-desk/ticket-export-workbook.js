@@ -78,19 +78,19 @@ const createTicketExportWorkbook = async (tickets) => {
     throw new Error(`Excel template not found at ${TEMPLATE_PATH}`);
   }
 
-  const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.readFile(TEMPLATE_PATH);
+  const sourceWorkbook = new ExcelJS.Workbook();
+  await sourceWorkbook.xlsx.readFile(TEMPLATE_PATH);
 
-  const templateWorksheet = resolveTemplateWorksheet(workbook);
+  const templateWorksheet = resolveTemplateWorksheet(sourceWorkbook);
 
   if (!templateWorksheet) {
     throw new Error("Worksheet CALLCENTER LOGS / CALLCENTER LOG / CALLCANTER LOG not found in template");
   }
-  const worksheet = templateWorksheet;
-  worksheet.name = "CALLCENTER LOGS";
+
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("CALLCENTER LOGS");
   const templateRowNumber = 2;
   const maxColumns = 19;
-  const templateValues = [];
   const headerValues = [];
   const templateStyle = {
     height: templateWorksheet.getRow(templateRowNumber).height,
@@ -100,8 +100,8 @@ const createTicketExportWorkbook = async (tickets) => {
   };
 
   for (let col = 1; col <= maxColumns; col += 1) {
-    const headerCell = templateWorksheet.getRow(1).getCell(col);
-    const cell = templateWorksheet.getRow(templateRowNumber).getCell(col);
+    const headerCell = templateWorksheet.getRow(1).getCell(Math.min(col, 18));
+    const cell = templateWorksheet.getRow(templateRowNumber).getCell(Math.min(col, 18));
 
     const templateColumn = templateWorksheet.getColumn(Math.min(col, 18));
 
@@ -113,7 +113,6 @@ const createTicketExportWorkbook = async (tickets) => {
     }
 
     headerValues[col] = col === 19 ? "First Time Response" : headerCell.value;
-    templateValues[col] = cell.value;
     templateStyle.headerCells[col] = {
       style: (col === 19 ? templateWorksheet.getRow(1).getCell(18) : headerCell).style,
       numFmt: (col === 19 ? templateWorksheet.getRow(1).getCell(18) : headerCell).numFmt,
@@ -136,10 +135,6 @@ const createTicketExportWorkbook = async (tickets) => {
     worksheet.views = JSON.parse(JSON.stringify(templateWorksheet.views));
   }
 
-  if (worksheet.rowCount > 1) {
-    worksheet.spliceRows(2, Math.max(worksheet.rowCount - 1, 0));
-  }
-
   worksheet.getRow(1).values = headerValues;
   applyStoredRowStyle(worksheet, 1, maxColumns, {
     height: templateStyle.headerHeight,
@@ -147,7 +142,7 @@ const createTicketExportWorkbook = async (tickets) => {
   });
 
   if (tickets.length === 0) {
-    worksheet.insertRow(2, templateValues);
+    worksheet.insertRow(2, new Array(maxColumns).fill(""));
     applyStoredRowStyle(worksheet, 2, maxColumns, templateStyle);
     for (let col = 1; col <= maxColumns; col += 1) {
       worksheet.getRow(2).getCell(col).value = col === 1 ? "No data" : "";
@@ -155,7 +150,7 @@ const createTicketExportWorkbook = async (tickets) => {
   } else {
     tickets.forEach((ticket, index) => {
       const rowNumber = index + 2;
-      worksheet.insertRow(rowNumber, templateValues);
+      worksheet.insertRow(rowNumber, new Array(maxColumns).fill(""));
       applyStoredRowStyle(worksheet, rowNumber, maxColumns, templateStyle);
       const row = worksheet.getRow(rowNumber);
 
