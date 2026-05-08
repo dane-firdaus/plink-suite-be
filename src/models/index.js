@@ -16,6 +16,8 @@ const listProductTypes = require("./report/list-product-types");
 const productSummaryTransactions = require("./report/product-summary-transactions");
 const voaMonitoringReport = require("./report/voa-monitoring-report");
 const voaTransactionListReport = require("./report/voa-transaction-list-report");
+const voaTransactionSummaryCardReport = require("./report/voa-transaction-summary-card-report");
+const voaTransactionSummaryReport = require("./report/voa-transaction-summary-report");
 const reconDashboardReport = require("./report/recon-dashboard-report");
 const financeVipotReport = require("./report/finance-vipot-report");
 const financeVipotDetailReport = require("./report/finance-vipot-detail-report");
@@ -67,6 +69,8 @@ module.exports = {
     productSummaryTransactions,
     voaMonitoringReport,
     voaTransactionListReport,
+    voaTransactionSummaryCardReport,
+    voaTransactionSummaryReport,
     reconDashboardReport,
     financeVipotReport,
     financeVipotDetailReport,

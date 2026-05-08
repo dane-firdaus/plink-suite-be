@@ -14,6 +14,8 @@ const listProductTypesController = require("./report/list-product-types.js");
 const productSummaryTransactionsController = require("./report/product-summary-transaction.js");
 const voaMonitoringReportController = require("./report/voa-monitoring-report.js");
 const voaTransactionListReportController = require("./report/voa-transaction-list-report.js");
+const voaTransactionSummaryCardReportController = require("./report/voa-transaction-summary-card-report.js");
+const voaTransactionSummaryReportController = require("./report/voa-transaction-summary-report.js");
 const reconDashboardReportController = require("./report/recon-dashboard-report.js");
 const financeVipotReportController = require("./report/finance-vipot-report.js");
 const financeVipotDetailReportController = require("./report/finance-vipot-detail-report.js");
@@ -64,6 +66,8 @@ module.exports = {
     productSummaryTransactionsController,
     voaMonitoringReportController,
     voaTransactionListReportController,
+    voaTransactionSummaryCardReportController,
+    voaTransactionSummaryReportController,
     reconDashboardReportController,
     financeVipotReportController,
     financeVipotDetailReportController,

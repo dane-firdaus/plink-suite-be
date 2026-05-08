@@ -10,6 +10,8 @@ const {
     productSummaryTransactionsController,
     voaMonitoringReportController,
     voaTransactionListReportController,
+    voaTransactionSummaryCardReportController,
+    voaTransactionSummaryReportController,
     reconDashboardReportController,
     financeVipotReportController,
     financeVipotDetailReportController
@@ -50,9 +52,28 @@ const voaMonitoringSchema = Joi.object({
 const voaTransactionListSchema = Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(150).default(50),
-    search: Joi.string().allow("").optional(),
     start_date: Joi.date().iso().optional(),
     end_date: Joi.date().iso().optional(),
+    transaction_date: Joi.string().allow("").optional(),
+    cutoffdate: Joi.string().allow("").optional(),
+    payment_method: Joi.string().allow("").optional(),
+    terminal: Joi.string().allow("").optional(),
+    ecomm_ref_no: Joi.string().allow("").optional(),
+    bank_ref_no: Joi.string().allow("").optional(),
+    merc_ref_no: Joi.string().allow("").optional(),
+    billing_id: Joi.string().allow("").optional(),
+    ntb: Joi.string().allow("").optional(),
+    ntpn: Joi.string().allow("").optional(),
+    card_type: Joi.string().allow("").optional(),
+    card_no: Joi.string().allow("").optional(),
+    amount: Joi.string().allow("").optional(),
+    net_amount: Joi.string().allow("").optional(),
+    payment_status: Joi.string().allow("").optional(),
+    status_indikator: Joi.string().allow("").optional(),
+});
+
+const voaTransactionSummaryCardSchema = Joi.object({
+    metric: Joi.string().valid('total_transactions', 'matched_success', 'potential_refund', 'refunded').required(),
 });
 
 const reconDashboardSchema = Joi.object({
@@ -95,6 +116,19 @@ router.get(
     auth,
     validator.query(voaTransactionListSchema),
     voaTransactionListReportController
+);
+
+router.get(
+    '/voa-transaction-list-summary-card',
+    auth,
+    validator.query(voaTransactionSummaryCardSchema),
+    voaTransactionSummaryCardReportController
+);
+
+router.get(
+    '/voa-transaction-list-summary',
+    auth,
+    voaTransactionSummaryReportController
 );
 
 router.get(
