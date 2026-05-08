@@ -32,7 +32,7 @@ const normalizeDate = (value) => {
 
 const getLatestTransactionDate = async (pool) => {
   const result = await pool.request().query(`
-    SELECT MAX(transaction_date) AS latest_transaction_date
+    SELECT MAX(recon_date) AS latest_transaction_date
     FROM v_settle_jan23
   `);
 
@@ -68,7 +68,7 @@ const getFinanceVipotDetailReport = async ({ rekonDate }) => {
         bank_account,
         bank_name,
         COUNT(*) AS volume,
-        SUM(CAST(transfer_amt AS decimal(18,2))) AS amount,
+        SUM(CAST(amount AS decimal(18,2))) AS amount,
         SUM(CAST(mdr_1 AS decimal(18,2))) AS mdr_total,
         SUM(CAST(ppn_value AS decimal(18,2))) AS ppn_total,
         SUM(CAST(pph_value AS decimal(18,2))) AS pph_total,
