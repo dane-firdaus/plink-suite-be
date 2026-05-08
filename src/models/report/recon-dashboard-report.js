@@ -63,7 +63,7 @@ const runSnapshotQuery = async (pool, selectedSnapshotDate) => {
       settle_flag,
       SUM(CAST(trx AS bigint)) AS total_volume,
       SUM(CAST(amount AS decimal(18,2))) AS total_amount,
-      SUM(CAST(mdr_2 AS decimal(18,2))) AS total_mdr,
+      SUM(CAST(MDR_1 AS decimal(18,2))) AS total_mdr,
       SUM(CAST(transfer_amt AS decimal(18,2))) AS total_net_amount
     FROM #recon_snapshot
     GROUP BY reconstatus, settle_flag;
@@ -75,7 +75,7 @@ const runSnapshotQuery = async (pool, selectedSnapshotDate) => {
       reconstatus,
       SUM(CAST(trx AS bigint)) AS volume,
       SUM(CAST(amount AS decimal(18,2))) AS trx_amount,
-      SUM(CAST(mdr_2 AS decimal(18,2))) AS mdr_amount,
+      SUM(CAST(MDR_1 AS decimal(18,2))) AS mdr_amount,
       SUM(CAST(transfer_amt AS decimal(18,2))) AS net_amount
     FROM #recon_snapshot
     GROUP BY trx_date, merchant_name, bank_name_1, reconstatus
