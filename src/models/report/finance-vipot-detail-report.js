@@ -75,7 +75,7 @@ const getFinanceVipotDetailReport = async ({ rekonDate }) => {
         SUM(CAST(mdr_2 AS decimal(18,2))) AS mdr_inc_total,
         SUM(CAST(transfer_amt AS decimal(18,2))) AS transfer_amt_final
       FROM v_settle_jan23
-      WHERE CONVERT(varchar(10), transaction_date, 23) = @rekonDate
+      WHERE CONVERT(varchar(10), rekon_date, 23) = @rekonDate
       GROUP BY merchant_name, bank_settle, bank_account, bank_name
       ORDER BY amount DESC, merchant_name ASC, bank_account ASC, bank_name ASC
     `);
