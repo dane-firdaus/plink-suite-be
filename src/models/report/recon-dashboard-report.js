@@ -186,8 +186,8 @@ const getReconDashboardReport = async ({ snapshotDate }) => {
         title: "Un-Settled Transaction",
         short_label: "US",
         tone: "secondary",
-        volume: totals.unsettled.volume,
-        amount: totals.unsettled.amount,
+        volume: 0,
+        amount: 0,
       },
       {
         key: "reconciled",

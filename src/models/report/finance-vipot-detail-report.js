@@ -33,7 +33,7 @@ const normalizeDate = (value) => {
 const getLatestTransactionDate = async (pool) => {
   const result = await pool.request().query(`
     SELECT MAX(transaction_date) AS latest_transaction_date
-    FROM v_rk_jan23
+    FROM v_settle_jan23
   `);
 
   const latestDate = result.recordset[0]?.latest_transaction_date;
@@ -64,7 +64,7 @@ const getFinanceVipotDetailReport = async ({ rekonDate }) => {
     return request.query(`
       SELECT
         merchant_name,
-        settle_flag,
+        bank_settle,
         bank_account,
         bank_name,
         COUNT(*) AS volume,
@@ -74,9 +74,9 @@ const getFinanceVipotDetailReport = async ({ rekonDate }) => {
         SUM(CAST(pph_value AS decimal(18,2))) AS pph_total,
         SUM(CAST(mdr_2 AS decimal(18,2))) AS mdr_inc_total,
         SUM(CAST(transfer_amt AS decimal(18,2))) AS transfer_amt_final
-      FROM v_rk_jan23
+      FROM v_settle_jan23
       WHERE CONVERT(varchar(10), transaction_date, 23) = @rekonDate
-      GROUP BY merchant_name, settle_flag, bank_account, bank_name
+      GROUP BY merchant_name, bank_settle, bank_account, bank_name
       ORDER BY amount DESC, merchant_name ASC, bank_account ASC, bank_name ASC
     `);
   };
@@ -101,7 +101,7 @@ const getFinanceVipotDetailReport = async ({ rekonDate }) => {
     merchant_name: row.merchant_name || "-",
     bank_account: row.bank_account || "-",
     bank_name: row.bank_name || "-",
-    settle_flag: row.settle_flag || "-",
+    bank_settle: row.bank_settle || "-",
     volume: toNumber(row.volume),
     amount: toNumber(row.amount),
     mdr: toNumber(row.mdr_total),
@@ -133,13 +133,13 @@ const getFinanceVipotDetailReport = async ({ rekonDate }) => {
     }
   );
 
-  const settleFlags = [...new Set(rows.map((row) => row.settle_flag).filter(Boolean))];
+  const bankSettles = [...new Set(rows.map((row) => row.bank_settle).filter(Boolean))];
 
   return {
     snapshot: {
       rekon_date: selectedRekonDate,
-      settle_flags: settleFlags,
-      source_view: "v_rk_jan23",
+      bank_settles: bankSettles,
+      source_view: "v_settle_jan23",
     },
     rows,
     grand_total: grandTotal,
