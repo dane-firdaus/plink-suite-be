@@ -1,4 +1,3 @@
-const { normalizeWorkspaceAccess } = require("../../utils/workspace-access");
 const { getWorkspaceSchemaAvailability } = require("../../utils/workspace-schema");
 const {
   normalizeWorkspaceMemberships,
@@ -43,7 +42,14 @@ const ensureUserWorkspaceState = async ({
 
   await client.query(
     `
-      INSERT INTO user_workspaces (user_id, workspace_id, is_default, created_at, updated_at)
+      INSERT INTO user_workspaces (
+        user_id,
+        workspace_id,
+        is_default,
+        workspace_role,
+        created_at,
+        updated_at
+      )
       SELECT
         $1,
         workspace_item.workspace_id,
