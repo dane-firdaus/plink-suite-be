@@ -12,6 +12,7 @@ const createUser = async ({
   fullname,
   workspace_access,
   default_workspace,
+  workspace_memberships,
 }) => {
   const client = await dbPool.connect();
 
@@ -73,8 +74,10 @@ const createUser = async ({
     const workspaceState = await ensureUserWorkspaceState({
       client,
       userId,
+      roleName: role_id,
       workspaceAccess: workspace_access,
       defaultWorkspace: default_workspace,
+      workspaceMemberships: workspace_memberships,
     });
 
     const result = await client.query(
@@ -91,7 +94,10 @@ const createUser = async ({
     );
 
     await client.query("COMMIT");
-    return result.rows[0];
+    return {
+      ...result.rows[0],
+      workspace_memberships: workspaceState.workspaceMemberships,
+    };
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;

@@ -73,6 +73,18 @@ const applyStoredRowStyle = (worksheet, targetRowNumber, totalColumns, templateS
   worksheet.getRow(targetRowNumber).height = templateStyle.height;
 };
 
+const getTemplateColumnIndex = (targetColumn) => {
+  if (targetColumn <= 11) {
+    return targetColumn;
+  }
+
+  if (targetColumn <= 17) {
+    return targetColumn + 1;
+  }
+
+  return 18;
+};
+
 const createTicketExportWorkbook = async (tickets) => {
   if (!fs.existsSync(TEMPLATE_PATH)) {
     throw new Error(`Excel template not found at ${TEMPLATE_PATH}`);
@@ -90,7 +102,7 @@ const createTicketExportWorkbook = async (tickets) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("CALLCENTER LOGS");
   const templateRowNumber = 2;
-  const maxColumns = 19;
+  const maxColumns = 18;
   const headerValues = [];
   const templateStyle = {
     height: templateWorksheet.getRow(templateRowNumber).height,
@@ -100,10 +112,10 @@ const createTicketExportWorkbook = async (tickets) => {
   };
 
   for (let col = 1; col <= maxColumns; col += 1) {
-    const headerCell = templateWorksheet.getRow(1).getCell(Math.min(col, 18));
-    const cell = templateWorksheet.getRow(templateRowNumber).getCell(Math.min(col, 18));
-
-    const templateColumn = templateWorksheet.getColumn(Math.min(col, 18));
+    const templateColumnIndex = getTemplateColumnIndex(col);
+    const headerCell = templateWorksheet.getRow(1).getCell(templateColumnIndex);
+    const cell = templateWorksheet.getRow(templateRowNumber).getCell(templateColumnIndex);
+    const templateColumn = templateWorksheet.getColumn(templateColumnIndex);
 
     worksheet.getColumn(col).width = templateColumn.width;
     if (templateColumn.style) {
@@ -112,22 +124,22 @@ const createTicketExportWorkbook = async (tickets) => {
       );
     }
 
-    headerValues[col] = col === 19 ? "First Time Response" : headerCell.value;
+    headerValues[col] = col === 18 ? "First Time Response" : headerCell.value;
     templateStyle.headerCells[col] = {
-      style: (col === 19 ? templateWorksheet.getRow(1).getCell(18) : headerCell).style,
-      numFmt: (col === 19 ? templateWorksheet.getRow(1).getCell(18) : headerCell).numFmt,
-      alignment: (col === 19 ? templateWorksheet.getRow(1).getCell(18) : headerCell).alignment,
-      border: (col === 19 ? templateWorksheet.getRow(1).getCell(18) : headerCell).border,
-      fill: (col === 19 ? templateWorksheet.getRow(1).getCell(18) : headerCell).fill,
-      font: (col === 19 ? templateWorksheet.getRow(1).getCell(18) : headerCell).font,
+      style: headerCell.style,
+      numFmt: headerCell.numFmt,
+      alignment: headerCell.alignment,
+      border: headerCell.border,
+      fill: headerCell.fill,
+      font: headerCell.font,
     };
     templateStyle.cells[col] = {
-      style: (col === 19 ? templateWorksheet.getRow(templateRowNumber).getCell(18) : cell).style,
-      numFmt: (col === 19 ? templateWorksheet.getRow(templateRowNumber).getCell(18) : cell).numFmt,
-      alignment: (col === 19 ? templateWorksheet.getRow(templateRowNumber).getCell(18) : cell).alignment,
-      border: (col === 19 ? templateWorksheet.getRow(templateRowNumber).getCell(18) : cell).border,
-      fill: (col === 19 ? templateWorksheet.getRow(templateRowNumber).getCell(18) : cell).fill,
-      font: (col === 19 ? templateWorksheet.getRow(templateRowNumber).getCell(18) : cell).font,
+      style: cell.style,
+      numFmt: cell.numFmt,
+      alignment: cell.alignment,
+      border: cell.border,
+      fill: cell.fill,
+      font: cell.font,
     };
   }
 
@@ -165,14 +177,13 @@ const createTicketExportWorkbook = async (tickets) => {
       row.getCell(9).value = ticket.detail_1 || "";
       row.getCell(10).value = ticket.detail_2 || ticket.description || ticket.title || "";
       row.getCell(11).value = ticket.bank || "";
-      row.getCell(12).value = ticket.detail_category_code || "";
-      row.getCell(13).value = mapStatusForExport(ticket.status);
-      row.getCell(14).value = ticket.note_detail || "";
-      row.getCell(15).value = ticket.handling_sop_code || "";
-      row.getCell(16).value = buildInvestigationProcess(ticket);
-      row.getCell(17).value = formatExcelDate(ticket.closed_at || ticket.resolved_at);
-      row.getCell(18).value = formatExcelDate(ticket.updated_at || ticket.created_at);
-      row.getCell(19).value = formatExcelDate(ticket.first_time_response);
+      row.getCell(12).value = mapStatusForExport(ticket.status);
+      row.getCell(13).value = ticket.note_detail || "";
+      row.getCell(14).value = ticket.handling_sop_code || "";
+      row.getCell(15).value = buildInvestigationProcess(ticket);
+      row.getCell(16).value = formatExcelDate(ticket.closed_at || ticket.resolved_at);
+      row.getCell(17).value = formatExcelDate(ticket.updated_at || ticket.created_at);
+      row.getCell(18).value = formatExcelDate(ticket.first_time_response);
       row.commit();
     });
   }

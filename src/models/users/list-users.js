@@ -1,5 +1,6 @@
 const dbPool = require("../../config/db");
 const { getWorkspaceSchemaAvailability } = require("../../utils/workspace-schema");
+const { resolveUserWorkspaceMemberships, flattenPrivilegeCodes } = require("./workspace-privileges");
 
 const listUsers = async ({ email, name, limit = 10, page = 1 }) => {
   const offset = (page - 1) * limit;
@@ -22,8 +23,15 @@ const listUsers = async ({ email, name, limit = 10, page = 1 }) => {
             json_build_object(
               'workspace_id', uw.workspace_id,
               'is_default', uw.is_default,
+              'workspace_role', COALESCE(uw.workspace_role, 'member'),
               'name', w.name,
-              'base_path', w.base_path
+              'base_path', w.base_path,
+              'privilege_codes', COALESCE((
+                SELECT json_agg(uwp.privilege_code ORDER BY uwp.privilege_code)
+                FROM user_workspace_privileges uwp
+                WHERE uwp.user_id = u.id
+                  AND uwp.workspace_id = uw.workspace_id
+              ), '[]'::json)
             )
             ORDER BY w.sort_order ASC, w.name ASC
           ) AS workspaces
@@ -72,7 +80,18 @@ const listUsers = async ({ email, name, limit = 10, page = 1 }) => {
     const totalPage = Math.ceil(totalCount / limit);
 
     return {
-      data: result.rows.map(({ total_count, ...row }) => row), // Hapus total_count dari setiap row
+      data: result.rows.map(({ total_count, ...row }) => {
+        const workspaceMemberships = resolveUserWorkspaceMemberships({
+          ...row,
+          workspace_memberships: Array.isArray(row.workspaces) ? row.workspaces : [],
+        });
+
+        return {
+          ...row,
+          workspace_memberships: workspaceMemberships,
+          privilege_codes: flattenPrivilegeCodes(workspaceMemberships),
+        };
+      }),
       pagination: {
         totalData: totalCount,
         totalPage: totalPage,

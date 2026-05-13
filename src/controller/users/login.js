@@ -31,6 +31,8 @@ const login = async (req, res) => {
             role_id : userChecking.role_id,
             workspace_access: workspaceAccess,
             default_workspace: defaultWorkspace,
+            workspace_memberships: userChecking.workspace_memberships || [],
+            privilege_codes: userChecking.privilege_codes || [],
         };
         const generateToken = jwt.sign(authPayload, process.env.JWT_SECRET, {expiresIn: "4h"});
         const generateRefreshToken = jwt.sign(authPayload, process.env.JWT_SECRET, {expiresIn: "30d"});
@@ -46,6 +48,8 @@ const login = async (req, res) => {
                 workspace_access: workspaceAccess,
                 default_workspace: defaultWorkspace,
                 workspaces: Array.isArray(userChecking.workspaces) ? userChecking.workspaces : [],
+                workspace_memberships: userChecking.workspace_memberships || [],
+                privilege_codes: userChecking.privilege_codes || [],
             },
             token : generateToken,
             refreshToken : generateRefreshToken

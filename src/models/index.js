@@ -7,6 +7,7 @@ const deleteUser = require("./users/delete-user");
 const createRoles = require("./roles/create-roles");
 const listUsers = require("./users/list-users");
 const listUserWorkspaces = require("./users/list-user-workspaces");
+const listPrivilegeCatalog = require("./users/list-privilege-catalog");
 const listDivisions = require("./divisions/list-division");
 const listRoles = require("./roles/list-roles");
 const updateRoles = require("./roles/update-roles");
@@ -33,9 +34,11 @@ const deleteTicket = require("./plink-desk/delete-ticket");
 const listTicketCategories = require("./plink-desk/list-ticket-categories");
 const listTicketSops = require("./plink-desk/list-ticket-sops");
 const listMerchantOptions = require("./plink-desk/list-merchant-options");
+const listTicketOptionValues = require("./plink-desk/list-ticket-option-values");
 const getTicketSopDetail = require("./plink-desk/get-ticket-sop-detail");
 const createTicketSop = require("./plink-desk/create-ticket-sop");
 const updateTicketSop = require("./plink-desk/update-ticket-sop");
+const createTicketOptionValue = require("./plink-desk/create-ticket-option-value");
 const exportTickets = require("./plink-desk/export-tickets");
 const createTicketExportWorkbook = require("./plink-desk/ticket-export-workbook");
 const importTicketWorkbook = require("./plink-desk/import-ticket-workbook");
@@ -60,6 +63,7 @@ module.exports = {
     createRoles,
     listUsers,
     listUserWorkspaces,
+    listPrivilegeCatalog,
     listDivisions,
     updateRoles,
     listRoles,
@@ -86,9 +90,11 @@ module.exports = {
     listTicketCategories,
     listTicketSops,
     listMerchantOptions,
+    listTicketOptionValues,
     getTicketSopDetail,
     createTicketSop,
     updateTicketSop,
+    createTicketOptionValue,
     exportTickets,
     createTicketExportWorkbook,
     importTicketWorkbook,

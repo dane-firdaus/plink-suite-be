@@ -27,6 +27,7 @@ const exportTickets = async ({
             COALESCE($1, '') = ''
             OR st.ticket_number ILIKE '%' || $1 || '%'
             OR st.title ILIKE '%' || $1 || '%'
+            OR st.detail_2 ILIKE '%' || $1 || '%'
             OR st.customer_name ILIKE '%' || $1 || '%'
             OR st.merchant_id ILIKE '%' || $1 || '%'
             OR st.merchant_name ILIKE '%' || $1 || '%'

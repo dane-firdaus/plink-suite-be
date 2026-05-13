@@ -1,6 +1,7 @@
 const dbPool = require("../../config/db");
 const { resolveWorkspaceAccess, resolveDefaultWorkspace } = require("../../utils/workspace-access");
 const { getWorkspaceSchemaAvailability } = require("../../utils/workspace-schema");
+const { resolveUserWorkspaceMemberships } = require("./workspace-privileges");
 
 const listUserWorkspaces = async ({ email }) => {
   const client = await dbPool.connect();
@@ -21,7 +22,14 @@ const listUserWorkspaces = async ({ email }) => {
               'workspace_id', uw.workspace_id,
               'name', w.name,
               'base_path', w.base_path,
-              'is_default', uw.is_default
+              'is_default', uw.is_default,
+              'workspace_role', COALESCE(uw.workspace_role, 'member'),
+              'privilege_codes', COALESCE((
+                SELECT json_agg(uwp.privilege_code ORDER BY uwp.privilege_code)
+                FROM user_workspace_privileges uwp
+                WHERE uwp.user_id = u.id
+                  AND uwp.workspace_id = uw.workspace_id
+              ), '[]'::json)
             )
             ORDER BY w.sort_order ASC, w.name ASC
           ) AS workspaces
@@ -60,7 +68,10 @@ const listUserWorkspaces = async ({ email }) => {
 
     const workspaceAccess = resolveWorkspaceAccess(user);
     const defaultWorkspace = resolveDefaultWorkspace(user, workspaceAccess);
-    const mappedFromRelations = Array.isArray(user.workspaces) ? user.workspaces : [];
+    const mappedFromRelations = resolveUserWorkspaceMemberships({
+      ...user,
+      workspace_memberships: Array.isArray(user.workspaces) ? user.workspaces : [],
+    });
 
     if (mappedFromRelations.length > 0) {
       return mappedFromRelations.map((workspace) => ({

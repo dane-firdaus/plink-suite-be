@@ -1,17 +1,26 @@
 const { normalizeWorkspaceAccess } = require("../../utils/workspace-access");
 const { getWorkspaceSchemaAvailability } = require("../../utils/workspace-schema");
+const {
+  normalizeWorkspaceMemberships,
+} = require("./workspace-privileges");
 
 const ensureUserWorkspaceState = async ({
   client,
   userId,
+  roleName,
   workspaceAccess,
   defaultWorkspace,
+  workspaceMemberships,
 }) => {
-  const normalizedWorkspaceAccess = normalizeWorkspaceAccess(workspaceAccess);
-  const safeWorkspaceAccess = normalizedWorkspaceAccess.length > 0 ? normalizedWorkspaceAccess : ["plink-one"];
-  const safeDefaultWorkspace = safeWorkspaceAccess.includes(defaultWorkspace)
-    ? defaultWorkspace
-    : safeWorkspaceAccess[0];
+  const normalizedMemberships = normalizeWorkspaceMemberships({
+    workspaceMemberships,
+    workspaceAccess,
+    defaultWorkspace,
+    roleName,
+  });
+  const safeWorkspaceAccess = normalizedMemberships.map((membership) => membership.workspace_id);
+  const safeDefaultWorkspace =
+    normalizedMemberships.find((membership) => membership.is_default)?.workspace_id || safeWorkspaceAccess[0] || "plink-one";
 
   const availability = await getWorkspaceSchemaAvailability(client);
 
@@ -19,6 +28,7 @@ const ensureUserWorkspaceState = async ({
     return {
       workspaceAccess: safeWorkspaceAccess,
       defaultWorkspace: safeDefaultWorkspace,
+      workspaceMemberships: normalizedMemberships,
     };
   }
 
@@ -38,10 +48,14 @@ const ensureUserWorkspaceState = async ({
         $1,
         workspace_item.workspace_id,
         workspace_item.workspace_id = $3,
+        workspace_item.workspace_role,
         NOW(),
         NOW()
       FROM (
-        SELECT UNNEST($2::varchar[]) AS workspace_id
+        SELECT
+          membership.workspace_id,
+          membership.workspace_role
+        FROM jsonb_to_recordset($2::jsonb) AS membership(workspace_id varchar, workspace_role varchar)
       ) AS workspace_item
       INNER JOIN workspaces w
         ON w.workspace_id = workspace_item.workspace_id
@@ -49,9 +63,19 @@ const ensureUserWorkspaceState = async ({
       ON CONFLICT (user_id, workspace_id) DO UPDATE
       SET
         is_default = EXCLUDED.is_default,
+        workspace_role = EXCLUDED.workspace_role,
         updated_at = NOW()
     `,
-    [userId, safeWorkspaceAccess, safeDefaultWorkspace]
+    [
+      userId,
+      JSON.stringify(
+        normalizedMemberships.map((membership) => ({
+          workspace_id: membership.workspace_id,
+          workspace_role: membership.workspace_role,
+        }))
+      ),
+      safeDefaultWorkspace,
+    ]
   );
 
   await client.query(
@@ -65,9 +89,48 @@ const ensureUserWorkspaceState = async ({
     [userId, safeDefaultWorkspace]
   );
 
+  await client.query(
+    `
+      DELETE FROM user_workspace_privileges
+      WHERE user_id = $1
+    `,
+    [userId]
+  );
+
+  for (const membership of normalizedMemberships) {
+    if (!membership.privilege_codes.length) {
+      continue;
+    }
+
+    await client.query(
+      `
+        INSERT INTO user_workspace_privileges (
+          user_id,
+          workspace_id,
+          privilege_code,
+          created_at,
+          updated_at
+        )
+        SELECT
+          $1,
+          $2,
+          privilege_item.privilege_code,
+          NOW(),
+          NOW()
+        FROM (
+          SELECT UNNEST($3::varchar[]) AS privilege_code
+        ) AS privilege_item
+        ON CONFLICT (user_id, workspace_id, privilege_code) DO UPDATE
+        SET updated_at = NOW()
+      `,
+      [userId, membership.workspace_id, membership.privilege_codes]
+    );
+  }
+
   return {
     workspaceAccess: safeWorkspaceAccess,
     defaultWorkspace: safeDefaultWorkspace,
+    workspaceMemberships: normalizedMemberships,
   };
 };
 

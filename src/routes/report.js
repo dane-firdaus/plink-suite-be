@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Joi = require("joi");
 const auth = require("../middleware/auth");
+const { authorize } = require("../middleware/authorize");
 const {
     createRolesController,
     listRolesController,
@@ -78,6 +79,7 @@ const voaTransactionSummaryCardSchema = Joi.object({
 
 const reconDashboardSchema = Joi.object({
     snapshot_date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    trx_date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
 const financeVipotSchema = Joi.object({
@@ -88,11 +90,12 @@ const financeVipotDetailSchema = Joi.object({
     rekon_date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
-router.get('/product-types', auth, listProductTypesController);
+router.get('/product-types', auth, authorize({ anyOf: ['plink-one.reports.read'] }), listProductTypesController);
 
 router.get(
     '/summary-data-transactions',
     auth,
+    authorize({ anyOf: ['plink-one.reports.read'] }),
     validator.query(summaryTransactionsSchema),
     summaryTransactionsController
 );
@@ -100,6 +103,7 @@ router.get(
 router.get(
     '/product-summary-transactions',
     auth,
+    authorize({ anyOf: ['plink-one.reports.read'] }),
     validator.query(productSummaryTransactionsSchema),
     productSummaryTransactionsController
 );
@@ -107,6 +111,7 @@ router.get(
 router.get(
     '/voa-monitoring',
     auth,
+    authorize({ anyOf: ['plink-one.reports.read', 'plink-desk.reports.read'] }),
     validator.query(voaMonitoringSchema),
     voaMonitoringReportController
 );
@@ -114,6 +119,7 @@ router.get(
 router.get(
     '/voa-transaction-list',
     auth,
+    authorize({ anyOf: ['plink-one.reports.read', 'plink-desk.reports.read'] }),
     validator.query(voaTransactionListSchema),
     voaTransactionListReportController
 );
@@ -121,6 +127,7 @@ router.get(
 router.get(
     '/voa-transaction-list-summary-card',
     auth,
+    authorize({ anyOf: ['plink-one.reports.read', 'plink-desk.reports.read'] }),
     validator.query(voaTransactionSummaryCardSchema),
     voaTransactionSummaryCardReportController
 );
@@ -128,12 +135,14 @@ router.get(
 router.get(
     '/voa-transaction-list-summary',
     auth,
+    authorize({ anyOf: ['plink-one.reports.read', 'plink-desk.reports.read'] }),
     voaTransactionSummaryReportController
 );
 
 router.get(
     '/recon-dashboard',
     auth,
+    authorize({ anyOf: ['plink-one.reports.read', 'plink-recon.dashboard.read'] }),
     validator.query(reconDashboardSchema),
     reconDashboardReportController
 );
@@ -141,6 +150,7 @@ router.get(
 router.get(
     '/finance-vipot',
     auth,
+    authorize({ anyOf: ['plink-one.reports.read', 'plink-books.settlements.read'] }),
     validator.query(financeVipotSchema),
     financeVipotReportController
 );
@@ -148,6 +158,7 @@ router.get(
 router.get(
     '/finance-vipot-detail',
     auth,
+    authorize({ anyOf: ['plink-one.reports.read', 'plink-books.settlements.read'] }),
     validator.query(financeVipotDetailSchema),
     financeVipotDetailReportController
 );

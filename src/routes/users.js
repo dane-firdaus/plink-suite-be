@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Joi = require("joi");
 const auth = require("../middleware/auth");
+const { authorize } = require("../middleware/authorize");
 const {
   registerController,
   loginController,
@@ -10,8 +11,16 @@ const {
   createUserController,
   updateUserController,
   deleteUserController,
+  listPrivilegeCatalogController,
 } = require("../controller");
 const validator = require("express-joi-validation").createValidator({});
+
+const workspaceMembershipSchema = Joi.object({
+    workspace_id: Joi.string().valid('plink-one', 'plink-desk', 'plink-crm', 'plink-recon', 'plink-books').required(),
+    workspace_role: Joi.string().valid('admin', 'member').required(),
+    privilege_codes: Joi.array().items(Joi.string().max(150)).required(),
+    is_default: Joi.boolean().optional(),
+});
 
 const registerSchema = Joi.object({
     username: Joi.string().required().max(100),
@@ -38,6 +47,7 @@ const adminUserSchema = Joi.object({
       Joi.string().valid('plink-one', 'plink-desk', 'plink-crm', 'plink-recon', 'plink-books')
     ).min(1).required(),
     default_workspace: Joi.string().valid('plink-one', 'plink-desk', 'plink-crm', 'plink-recon', 'plink-books').required(),
+    workspace_memberships: Joi.array().items(workspaceMembershipSchema).min(1).optional(),
 });
 
 const createUserSchema = adminUserSchema.keys({
@@ -52,11 +62,12 @@ const updateUserSchema = adminUserSchema.keys({
 
 router.post('/authentications/register-user', validator.body(registerSchema), registerController);
 router.post('/authentications/login', validator.body(loginSchema), loginController);
-router.post('/create', auth, validator.body(createUserSchema), createUserController);
-router.put('/:userId', auth, validator.body(updateUserSchema), updateUserController);
-router.delete('/:userId', auth, deleteUserController);
+router.post('/create', auth, authorize({ anyOf: ['plink-one.users.create'] }), validator.body(createUserSchema), createUserController);
+router.put('/:userId', auth, authorize({ anyOf: ['plink-one.users.update'] }), validator.body(updateUserSchema), updateUserController);
+router.delete('/:userId', auth, authorize({ anyOf: ['plink-one.users.delete'] }), deleteUserController);
 
-router.get('/list-users', auth, listUsersController)
+router.get('/list-users', auth, authorize({ anyOf: ['plink-one.users.read'] }), listUsersController)
 router.get('/workspaces', auth, listUserWorkspacesController)
+router.get('/privilege-catalog', auth, authorize({ anyOf: ['plink-one.users.read', 'plink-one.roles.read'] }), listPrivilegeCatalogController)
 
 module.exports = router;

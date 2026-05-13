@@ -30,106 +30,60 @@ const normalizeDate = (value) => {
   return trimmedValue;
 };
 
-const getDefaultSnapshotDate = () => {
-  const currentDate = new Date();
-
-  return new Date(
-    Date.UTC(
-      currentDate.getUTCFullYear(),
-      currentDate.getUTCMonth(),
-      currentDate.getUTCDate() - 1
-    )
-  );
-};
-
-const runSnapshotQuery = async (pool, selectedSnapshotDate) => {
-  const request = pool.request();
-  request.input("snapshotDate", sql.Date, selectedSnapshotDate);
-
-  const result = await request.query(`
-    SELECT *
-    INTO #recon_snapshot
-    FROM v_summary_recon2
-    WHERE trx_date = @snapshotDate;
-
+const getReconDataset = async (pool) => {
+  const result = await pool.request().query(`
     SELECT
       COUNT(*) AS total_rows,
+      MAX(trx_date) AS latest_trx_date,
+      MIN(trx_date) AS earliest_trx_date,
       MAX(transaction_date) AS latest_transaction_date,
       MIN(transaction_date) AS earliest_transaction_date
-    FROM #recon_snapshot;
+    FROM v_summary_recon2;
 
-    SELECT
-      reconstatus,
-      settle_flag,
-      SUM(CAST(trx AS bigint)) AS total_volume,
-      SUM(CAST(amount AS decimal(18,2))) AS total_amount,
-      SUM(CAST(MDR_1 AS decimal(18,2))) AS total_mdr,
-      SUM(CAST(transfer_amt AS decimal(18,2))) AS total_net_amount
-    FROM #recon_snapshot
-    GROUP BY reconstatus, settle_flag;
+    SELECT DISTINCT trx_date
+    FROM v_summary_recon2
+    WHERE trx_date IS NOT NULL
+    ORDER BY trx_date DESC;
 
     SELECT
       trx_date,
       merchant_name,
       bank_name_1,
       reconstatus,
+      settle_flag,
       SUM(CAST(trx AS bigint)) AS volume,
       SUM(CAST(amount AS decimal(18,2))) AS trx_amount,
       SUM(CAST(MDR_1 AS decimal(18,2))) AS mdr_amount,
       SUM(CAST(transfer_amt AS decimal(18,2))) AS net_amount
-    FROM #recon_snapshot
-    GROUP BY trx_date, merchant_name, bank_name_1, reconstatus
-    ORDER BY trx_amount DESC, volume DESC, merchant_name ASC;
+    FROM v_summary_recon2
+    GROUP BY trx_date, merchant_name, bank_name_1, reconstatus, settle_flag
+    ORDER BY trx_date DESC, trx_amount DESC, volume DESC, merchant_name ASC;
   `);
 
   return {
     metadata: result.recordsets?.[0]?.[0] || null,
-    summaryRows: result.recordsets?.[1] || [],
+    trxDates: (result.recordsets?.[1] || [])
+      .map((row) => normalizeDate(row.trx_date))
+      .filter(Boolean),
     tableRows: result.recordsets?.[2] || [],
   };
 };
 
 const buildEmptyResponse = () => ({
   snapshot: null,
+  available_trx_dates: [],
   summary_cards: [],
   table_rows: [],
   grand_total: null,
 });
 
-const getReconDashboardReport = async ({ snapshotDate }) => {
-  const pool = await reportPoolConnect;
-
-  let selectedSnapshotDate = normalizeDate(snapshotDate) || getDefaultSnapshotDate();
-  let { metadata, summaryRows, tableRows } = await runSnapshotQuery(pool, selectedSnapshotDate);
-
-  if (!snapshotDate && Number(metadata?.total_rows || 0) === 0) {
-    const maxDateResult = await pool.request().query(`
-      SELECT MAX(trx_date) AS latest_snapshot_date
-      FROM v_summary_recon2
-    `);
-
-    selectedSnapshotDate = maxDateResult.recordset[0]?.latest_snapshot_date || null;
-
-    if (!selectedSnapshotDate) {
-      return buildEmptyResponse();
-    }
-
-    const fallbackResult = await runSnapshotQuery(pool, selectedSnapshotDate);
-    metadata = fallbackResult.metadata;
-    summaryRows = fallbackResult.summaryRows;
-    tableRows = fallbackResult.tableRows;
-  }
-
-  if (!selectedSnapshotDate || Number(metadata?.total_rows || 0) === 0) {
-    return buildEmptyResponse();
-  }
-
-  const totals = summaryRows.reduce(
+const buildSummaryCards = (rows) => {
+  const totals = rows.reduce(
     (accumulator, row) => {
-      const volume = toNumber(row.total_volume);
-      const amount = toNumber(row.total_amount);
-      const mdr = toNumber(row.total_mdr);
-      const netAmount = toNumber(row.total_net_amount);
+      const volume = toNumber(row.volume);
+      const amount = toNumber(row.trx_amount);
+      const mdr = toNumber(row.mdr_amount);
+      const netAmount = toNumber(row.net_amount);
       const status = String(row.reconstatus || "").toLowerCase();
       const settleFlag = String(row.settle_flag || "").toUpperCase();
 
@@ -164,15 +118,7 @@ const getReconDashboardReport = async ({ snapshotDate }) => {
   );
 
   return {
-    source_view: "v_summary_recon2",
-    snapshot: {
-      latest_snapshot_date: selectedSnapshotDate,
-      latest_transaction_date: metadata?.latest_transaction_date || selectedSnapshotDate,
-      current_snapshot_date: selectedSnapshotDate,
-      earliest_transaction_date: metadata?.earliest_transaction_date || selectedSnapshotDate,
-      total_rows: toNumber(metadata?.total_rows),
-    },
-    summary_cards: [
+    summaryCards: [
       {
         key: "total_processed",
         title: "Total Transaction Processed",
@@ -186,8 +132,8 @@ const getReconDashboardReport = async ({ snapshotDate }) => {
         title: "Un-Settled Transaction",
         short_label: "US",
         tone: "secondary",
-        volume: 0,
-        amount: 0,
+        volume: totals.unsettled.volume,
+        amount: totals.unsettled.amount,
       },
       {
         key: "reconciled",
@@ -206,22 +152,54 @@ const getReconDashboardReport = async ({ snapshotDate }) => {
         amount: totals.unreconciled.amount,
       },
     ],
-    table_rows: tableRows.map((row) => ({
-      rk_date: row.trx_date,
-      merchant_name: row.merchant_name,
-      payment_channel: row.bank_name_1,
-      status: row.reconstatus,
-      volume: toNumber(row.volume),
-      trx_amount: toNumber(row.trx_amount),
-      mdr_amount: toNumber(row.mdr_amount),
-      net_amount: toNumber(row.net_amount),
-    })),
-    grand_total: {
+    grandTotal: {
       volume: totals.total_processed.volume,
       trx_amount: totals.total_processed.amount,
       mdr_amount: totals.total_processed.mdr,
       net_amount: totals.total_processed.net_amount,
     },
+  };
+};
+
+const getReconDashboardReport = async ({ snapshotDate, trxDate }) => {
+  const pool = await reportPoolConnect;
+  const { metadata, trxDates, tableRows } = await getReconDataset(pool);
+
+  if (Number(metadata?.total_rows || 0) === 0 || !trxDates.length) {
+    return buildEmptyResponse();
+  }
+
+  const normalizedRequestedDate = normalizeDate(trxDate || snapshotDate);
+  const latestTrxDate = normalizeDate(metadata?.latest_trx_date) || normalizeDate(trxDates[0]);
+  const selectedTrxDate =
+    normalizedRequestedDate && trxDates.includes(normalizedRequestedDate) ? normalizedRequestedDate : latestTrxDate;
+
+  const summarySourceRows = tableRows.filter((row) => normalizeDate(row.trx_date) === selectedTrxDate);
+  const { summaryCards, grandTotal } = buildSummaryCards(summarySourceRows);
+
+  return {
+    source_view: "v_summary_recon2",
+    snapshot: {
+      latest_snapshot_date: latestTrxDate,
+      latest_transaction_date: metadata?.latest_transaction_date || latestTrxDate,
+      current_snapshot_date: selectedTrxDate,
+      earliest_transaction_date: metadata?.earliest_transaction_date || metadata?.earliest_trx_date || latestTrxDate,
+      total_rows: toNumber(metadata?.total_rows),
+    },
+    available_trx_dates: trxDates.map((value) => normalizeDate(value)).filter(Boolean),
+    summary_cards: summaryCards,
+    table_rows: tableRows.map((row) => ({
+      rk_date: row.trx_date,
+      merchant_name: row.merchant_name,
+      payment_channel: row.bank_name_1,
+      status: row.reconstatus,
+      settle_flag: row.settle_flag,
+      volume: toNumber(row.volume),
+      trx_amount: toNumber(row.trx_amount),
+      mdr_amount: toNumber(row.mdr_amount),
+      net_amount: toNumber(row.net_amount),
+    })),
+    grand_total: grandTotal,
   };
 };
 
