@@ -8,6 +8,10 @@ const loginController = require("./users/login.js");
 const listUsersController = require("./users/list-users.js");
 const listUserWorkspacesController = require("./users/list-user-workspaces.js");
 const listPrivilegeCatalogController = require("./users/list-privilege-catalog.js");
+const getCurrentUserProfileController = require("./users/get-current-user-profile.js");
+const updateCurrentUserProfileController = require("./users/update-current-user-profile.js");
+const changeCurrentUserPasswordController = require("./users/change-current-user-password.js");
+const forgotPasswordController = require("./users/forgot-password.js");
 const listDivisionsController = require("./divisions/list-division.js");
 const listRolesController = require("./roles/list-roles.js");
 const summaryTransactionsController = require("./report/summary-transaction.js");
@@ -63,6 +67,10 @@ module.exports = {
     listUsersController,
     listUserWorkspacesController,
     listPrivilegeCatalogController,
+    getCurrentUserProfileController,
+    updateCurrentUserProfileController,
+    changeCurrentUserPasswordController,
+    forgotPasswordController,
     listDivisionsController,
     listRolesController,
     summaryTransactionsController,

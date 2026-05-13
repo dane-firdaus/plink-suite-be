@@ -8,6 +8,10 @@ const createRoles = require("./roles/create-roles");
 const listUsers = require("./users/list-users");
 const listUserWorkspaces = require("./users/list-user-workspaces");
 const listPrivilegeCatalog = require("./users/list-privilege-catalog");
+const getCurrentUserProfile = require("./users/get-current-user-profile");
+const updateCurrentUserProfile = require("./users/update-current-user-profile");
+const changeCurrentUserPassword = require("./users/change-current-user-password");
+const forgotPassword = require("./users/forgot-password");
 const listDivisions = require("./divisions/list-division");
 const listRoles = require("./roles/list-roles");
 const updateRoles = require("./roles/update-roles");
@@ -64,6 +68,10 @@ module.exports = {
     listUsers,
     listUserWorkspaces,
     listPrivilegeCatalog,
+    getCurrentUserProfile,
+    updateCurrentUserProfile,
+    changeCurrentUserPassword,
+    forgotPassword,
     listDivisions,
     updateRoles,
     listRoles,

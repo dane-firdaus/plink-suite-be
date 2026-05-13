@@ -12,6 +12,10 @@ const {
   updateUserController,
   deleteUserController,
   listPrivilegeCatalogController,
+  getCurrentUserProfileController,
+  updateCurrentUserProfileController,
+  changeCurrentUserPasswordController,
+  forgotPasswordController,
 } = require("../controller");
 const validator = require("express-joi-validation").createValidator({});
 
@@ -34,6 +38,24 @@ const registerSchema = Joi.object({
 const loginSchema = Joi.object({
     email: Joi.string().email().required().max(60),
     password: Joi.string().required().max(100),
+});
+
+const forgotPasswordSchema = Joi.object({
+    email: Joi.string().email().required().max(60),
+    username: Joi.string().required().max(100),
+    fullname: Joi.string().required().max(150),
+    new_password: Joi.string().required().min(6).max(100),
+});
+
+const updateProfileSchema = Joi.object({
+    username: Joi.string().required().max(100),
+    fullname: Joi.string().required().max(150),
+    division_id: Joi.string().required().max(100),
+});
+
+const changePasswordSchema = Joi.object({
+    current_password: Joi.string().required().max(100),
+    new_password: Joi.string().required().min(6).max(100),
 });
 
 const adminUserSchema = Joi.object({
@@ -62,6 +84,7 @@ const updateUserSchema = adminUserSchema.keys({
 
 router.post('/authentications/register-user', validator.body(registerSchema), registerController);
 router.post('/authentications/login', validator.body(loginSchema), loginController);
+router.post('/authentications/forgot-password', validator.body(forgotPasswordSchema), forgotPasswordController);
 router.post('/create', auth, authorize({ anyOf: ['plink-one.users.create'] }), validator.body(createUserSchema), createUserController);
 router.put('/:userId', auth, authorize({ anyOf: ['plink-one.users.update'] }), validator.body(updateUserSchema), updateUserController);
 router.delete('/:userId', auth, authorize({ anyOf: ['plink-one.users.delete'] }), deleteUserController);
@@ -69,5 +92,8 @@ router.delete('/:userId', auth, authorize({ anyOf: ['plink-one.users.delete'] })
 router.get('/list-users', auth, authorize({ anyOf: ['plink-one.users.read'] }), listUsersController)
 router.get('/workspaces', auth, listUserWorkspacesController)
 router.get('/privilege-catalog', auth, authorize({ anyOf: ['plink-one.users.read', 'plink-one.roles.read'] }), listPrivilegeCatalogController)
+router.get('/me', auth, getCurrentUserProfileController)
+router.put('/me/profile', auth, validator.body(updateProfileSchema), updateCurrentUserProfileController)
+router.put('/me/password', auth, validator.body(changePasswordSchema), changeCurrentUserPasswordController)
 
 module.exports = router;

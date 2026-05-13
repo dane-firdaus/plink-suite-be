@@ -48,9 +48,11 @@ const getUserByEmail = async (email) => {
             ${workspaceAccessSelect},
             ${defaultWorkspaceSelect},
             r.name AS role_name,
+            d.name AS division_name,
             ${workspaceRelationsSelect}
           FROM users u
           LEFT JOIN roles r ON u.role_id = r.role_id
+          LEFT JOIN divisions d ON u.division_id = d.division_id
           ${workspaceRelationsJoin}
           WHERE u.email = $1
         `;
