@@ -36,11 +36,15 @@ const deleteTicketController = require("./plink-desk/delete-ticket.js");
 const listTicketCategoriesController = require("./plink-desk/list-ticket-categories.js");
 const listTicketSopsController = require("./plink-desk/list-ticket-sops.js");
 const listMerchantOptionsController = require("./plink-desk/list-merchant-options.js");
+const updateMerchantOptionController = require("./plink-desk/update-merchant-option.js");
+const deleteMerchantOptionController = require("./plink-desk/delete-merchant-option.js");
 const listTicketOptionValuesController = require("./plink-desk/list-ticket-option-values.js");
 const getTicketSopDetailController = require("./plink-desk/get-ticket-sop-detail.js");
 const createTicketSopController = require("./plink-desk/create-ticket-sop.js");
 const updateTicketSopController = require("./plink-desk/update-ticket-sop.js");
 const createTicketOptionValueController = require("./plink-desk/create-ticket-option-value.js");
+const updateTicketOptionValueController = require("./plink-desk/update-ticket-option-value.js");
+const deleteTicketOptionValueController = require("./plink-desk/delete-ticket-option-value.js");
 const exportTicketReportController = require("./plink-desk/export-ticket-report.js");
 const importTicketWorkbookController = require("./plink-desk/import-ticket-workbook.js");
 const getOnboardingSchemaController = require("./plink-desk/get-onboarding-schema.js");
@@ -95,11 +99,15 @@ module.exports = {
     listTicketCategoriesController,
     listTicketSopsController,
     listMerchantOptionsController,
+    updateMerchantOptionController,
+    deleteMerchantOptionController,
     listTicketOptionValuesController,
     getTicketSopDetailController,
     createTicketSopController,
     updateTicketSopController,
     createTicketOptionValueController,
+    updateTicketOptionValueController,
+    deleteTicketOptionValueController,
     exportTicketReportController,
     importTicketWorkbookController,
     getOnboardingSchemaController,

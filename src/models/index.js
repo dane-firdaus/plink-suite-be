@@ -38,11 +38,15 @@ const deleteTicket = require("./plink-desk/delete-ticket");
 const listTicketCategories = require("./plink-desk/list-ticket-categories");
 const listTicketSops = require("./plink-desk/list-ticket-sops");
 const listMerchantOptions = require("./plink-desk/list-merchant-options");
+const updateMerchantOption = require("./plink-desk/update-merchant-option");
+const deleteMerchantOption = require("./plink-desk/delete-merchant-option");
 const listTicketOptionValues = require("./plink-desk/list-ticket-option-values");
 const getTicketSopDetail = require("./plink-desk/get-ticket-sop-detail");
 const createTicketSop = require("./plink-desk/create-ticket-sop");
 const updateTicketSop = require("./plink-desk/update-ticket-sop");
 const createTicketOptionValue = require("./plink-desk/create-ticket-option-value");
+const updateTicketOptionValue = require("./plink-desk/update-ticket-option-value");
+const deleteTicketOptionValue = require("./plink-desk/delete-ticket-option-value");
 const exportTickets = require("./plink-desk/export-tickets");
 const createTicketExportWorkbook = require("./plink-desk/ticket-export-workbook");
 const importTicketWorkbook = require("./plink-desk/import-ticket-workbook");
@@ -98,11 +102,15 @@ module.exports = {
     listTicketCategories,
     listTicketSops,
     listMerchantOptions,
+    updateMerchantOption,
+    deleteMerchantOption,
     listTicketOptionValues,
     getTicketSopDetail,
     createTicketSop,
     updateTicketSop,
     createTicketOptionValue,
+    updateTicketOptionValue,
+    deleteTicketOptionValue,
     exportTickets,
     createTicketExportWorkbook,
     importTicketWorkbook,

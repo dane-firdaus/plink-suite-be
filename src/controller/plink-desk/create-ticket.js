@@ -14,9 +14,9 @@ const createTicketController = async (req, res) => {
     });
   } catch (error) {
     console.log(error.stack);
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       success: false,
-      message: "Failed to create ticket",
+      message: error.message || "Failed to create ticket",
     });
   }
 };

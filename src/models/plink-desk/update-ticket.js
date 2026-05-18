@@ -1,7 +1,7 @@
 const { v4: uuid } = require("uuid");
 const dbPool = require("../../config/db");
 const { hasSupportTicketColumn } = require("./shared");
-const ensureTicketOptionValues = require("./ensure-ticket-option-values");
+const assertTicketOptionValues = require("./assert-ticket-option-values");
 
 const updateTicket = async (ticketId, payload) => {
   const client = await dbPool.connect();
@@ -32,7 +32,7 @@ const updateTicket = async (ticketId, payload) => {
       ? "first_time_response = $23,"
       : "";
 
-    await ensureTicketOptionValues(client, payload);
+    await assertTicketOptionValues(client, payload);
 
     const updatedResult = await client.query(
       `

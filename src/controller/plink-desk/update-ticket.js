@@ -21,9 +21,9 @@ const updateTicketController = async (req, res) => {
     });
   } catch (error) {
     console.log(error.stack);
-    return res.status(500).json({
+    return res.status(error.statusCode || 500).json({
       success: false,
-      message: "Failed to update ticket",
+      message: error.message || "Failed to update ticket",
     });
   }
 };

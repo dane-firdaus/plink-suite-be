@@ -21,11 +21,15 @@ const {
   listTicketCategoriesController,
   listTicketSopsController,
   listMerchantOptionsController,
+  updateMerchantOptionController,
+  deleteMerchantOptionController,
   listTicketOptionValuesController,
   getTicketSopDetailController,
   createTicketSopController,
   updateTicketSopController,
   createTicketOptionValueController,
+  updateTicketOptionValueController,
+  deleteTicketOptionValueController,
   exportTicketReportController,
   importTicketWorkbookController,
   getOnboardingSchemaController,
@@ -113,6 +117,10 @@ const merchantQuerySchema = Joi.object({
   limit: Joi.number().integer().min(1).max(50).default(20),
 });
 
+const merchantPayloadSchema = Joi.object({
+  merchant_name: Joi.string().trim().max(150).required(),
+});
+
 const ticketOptionValueQuerySchema = Joi.object({
   field_name: Joi.string().valid("title", "detail_1").required(),
   search: Joi.string().allow("").optional(),
@@ -150,6 +158,14 @@ const sopParamsSchema = Joi.object({
   sopId: Joi.string().guid().required(),
 });
 
+const ticketOptionValueParamsSchema = Joi.object({
+  optionId: Joi.string().guid({ version: ["uuidv4", "uuidv5"] }).required(),
+});
+
+const merchantParamsSchema = Joi.object({
+  merchantId: Joi.string().trim().min(1).required(),
+});
+
 const onboardingParamsSchema = Joi.object({
   recordId: Joi.string().guid({ version: ["uuidv4", "uuidv5"] }).required(),
 });
@@ -158,6 +174,21 @@ router.get("/dashboard/summary", auth, authorize({ anyOf: ["plink-desk.dashboard
 router.get("/categories", auth, authorize({ anyOf: ["plink-desk.tickets.read"] }), listTicketCategoriesController);
 router.get("/sops", auth, authorize({ anyOf: ["plink-desk.sops.read"] }), listTicketSopsController);
 router.get("/merchants", auth, authorize({ anyOf: ["plink-desk.tickets.read"] }), validator.query(merchantQuerySchema), listMerchantOptionsController);
+router.put(
+  "/merchants/:merchantId",
+  auth,
+  authorize({ anyOf: ["plink-desk.ticket-options.update"] }),
+  validator.params(merchantParamsSchema),
+  validator.body(merchantPayloadSchema),
+  updateMerchantOptionController
+);
+router.delete(
+  "/merchants/:merchantId",
+  auth,
+  authorize({ anyOf: ["plink-desk.ticket-options.delete"] }),
+  validator.params(merchantParamsSchema),
+  deleteMerchantOptionController
+);
 router.get(
   "/ticket-option-values",
   auth,
@@ -171,6 +202,21 @@ router.post(
   authorize({ anyOf: ["plink-desk.ticket-options.create"] }),
   validator.body(ticketOptionValueSchema),
   createTicketOptionValueController
+);
+router.put(
+  "/ticket-option-values/:optionId",
+  auth,
+  authorize({ anyOf: ["plink-desk.ticket-options.update"] }),
+  validator.params(ticketOptionValueParamsSchema),
+  validator.body(ticketOptionValueSchema),
+  updateTicketOptionValueController
+);
+router.delete(
+  "/ticket-option-values/:optionId",
+  auth,
+  authorize({ anyOf: ["plink-desk.ticket-options.delete"] }),
+  validator.params(ticketOptionValueParamsSchema),
+  deleteTicketOptionValueController
 );
 router.get("/onboarding/schema", auth, authorize({ anyOf: ["plink-desk.onboarding.read", "plink-crm.onboarding.read"] }), getOnboardingSchemaController);
 router.post("/onboarding/sync", auth, authorize({ anyOf: ["plink-desk.onboarding.update", "plink-crm.onboarding.update"] }), syncOnboardingRecordsController);
