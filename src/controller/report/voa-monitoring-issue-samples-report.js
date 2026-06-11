@@ -1,12 +1,12 @@
 const models = require("../../models");
 
-const voaMonitoringReport = async (req, res) => {
+const voaMonitoringIssueSamplesReport = async (req, res) => {
   try {
     const startDate = req.query.start_date || null;
     const endDate = req.query.end_date || null;
     const detailLimit = Number(req.query.detail_limit) || 25;
 
-    const result = await models.voaMonitoringReport({
+    const result = await models.voaMonitoringReport.getIssueSamples({
       startDate,
       endDate,
       detailLimit,
@@ -25,4 +25,4 @@ const voaMonitoringReport = async (req, res) => {
   }
 };
 
-module.exports = voaMonitoringReport;
+module.exports = voaMonitoringIssueSamplesReport;

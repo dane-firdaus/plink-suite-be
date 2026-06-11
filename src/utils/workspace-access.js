@@ -1,4 +1,11 @@
-const ALL_WORKSPACES = ["plink-one", "plink-desk", "plink-crm", "plink-recon", "plink-books"];
+const ALL_WORKSPACES = [
+  "plink-one",
+  "plink-desk",
+  "plink-crm",
+  "plink-recon",
+  "plink-books",
+  "plink-back-stage",
+];
 
 const normalizeWorkspaceAccess = (value) => {
   if (!Array.isArray(value)) {
@@ -23,7 +30,7 @@ const inferWorkspaceAccessFromRole = (roleName = "") => {
     normalizedRole.includes("director") ||
     normalizedRole.includes("management")
   ) {
-    return ["plink-one", "plink-desk", "plink-crm", "plink-recon", "plink-books"];
+    return ALL_WORKSPACES;
   }
 
   if (
@@ -49,6 +56,18 @@ const inferWorkspaceAccessFromRole = (roleName = "") => {
     normalizedRole.includes("settlement")
   ) {
     return ["plink-recon", "plink-books"];
+  }
+
+  if (
+    normalizedRole.includes("business analyst") ||
+    normalizedRole.includes("analyst") ||
+    normalizedRole.includes("project manager") ||
+    normalizedRole.includes("pm") ||
+    normalizedRole.includes("developer") ||
+    normalizedRole.includes("engineer") ||
+    normalizedRole.includes("product")
+  ) {
+    return ["plink-back-stage"];
   }
 
   return ["plink-one"];

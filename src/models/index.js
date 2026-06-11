@@ -61,6 +61,22 @@ const getSalesDetail = require("./crm/get-sales-detail");
 const createSales = require("./crm/create-sales");
 const updateSales = require("./crm/update-sales");
 const deleteSales = require("./crm/delete-sales");
+const {
+  listProjects: listBackstageProjects,
+  getProjectDetail: getBackstageProjectDetail,
+  createProject: createBackstageProject,
+  updateProject: updateBackstageProject,
+  deleteProject: deleteBackstageProject,
+} = require("./backstage/projects");
+const {
+  listTasks: listBackstageTasks,
+  getTaskDetail: getBackstageTaskDetail,
+  createTask: createBackstageTask,
+  updateTask: updateBackstageTask,
+  deleteTask: deleteBackstageTask,
+  createTaskUpdate: createBackstageTaskUpdate,
+} = require("./backstage/tasks");
+const getBackstageDashboardSummary = require("./backstage/dashboard");
 module.exports = {
     createDivisions,
     getUserByEmail,
@@ -124,5 +140,17 @@ module.exports = {
     getSalesDetail,
     createSales,
     updateSales,
-    deleteSales
+    deleteSales,
+    listBackstageProjects,
+    getBackstageProjectDetail,
+    createBackstageProject,
+    updateBackstageProject,
+    deleteBackstageProject,
+    listBackstageTasks,
+    getBackstageTaskDetail,
+    createBackstageTask,
+    updateBackstageTask,
+    deleteBackstageTask,
+    createBackstageTaskUpdate,
+    getBackstageDashboardSummary
 }

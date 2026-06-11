@@ -11,6 +11,7 @@ const userRouter = require('./src/routes/users');
 const reportRouter = require('./src/routes/report');
 const plinkDeskRouter = require('./src/routes/plink-desk');
 const crmRouter = require('./src/routes/crm');
+const backstageRouter = require('./src/routes/backstage');
 const { startOnboardingSyncPolling } = require('./src/utils/onboarding-sync-poller');
 
 const port = process.env.PORT || 3099;
@@ -35,6 +36,7 @@ app.use('/api/v1/users', userRouter)
 app.use('/api/v1/report', reportRouter)
 app.use('/api/v1/plink-desk', plinkDeskRouter)
 app.use('/api/v1/crm', crmRouter)
+app.use('/api/v1/backstage', backstageRouter)
 
 
 app.get('/', (req, res) => {

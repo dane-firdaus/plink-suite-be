@@ -31,6 +31,31 @@ const ensureUserWorkspaceState = async ({
     };
   }
 
+  const registeredWorkspacesResult = await client.query(
+    `
+      SELECT workspace_id
+      FROM workspaces
+      WHERE workspace_id = ANY($1::varchar[])
+        AND is_active = TRUE
+    `,
+    [safeWorkspaceAccess]
+  );
+
+  const registeredWorkspaceIds = new Set(
+    registeredWorkspacesResult.rows.map((row) => row.workspace_id)
+  );
+  const missingWorkspaceIds = safeWorkspaceAccess.filter(
+    (workspaceId) => !registeredWorkspaceIds.has(workspaceId)
+  );
+
+  if (missingWorkspaceIds.length > 0) {
+    const error = new Error(
+      `Workspace is not registered or inactive: ${missingWorkspaceIds.join(", ")}`
+    );
+    error.statusCode = 400;
+    throw error;
+  }
+
   await client.query(
     `
       DELETE FROM user_workspaces

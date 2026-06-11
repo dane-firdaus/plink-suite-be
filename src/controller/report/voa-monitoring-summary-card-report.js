@@ -1,15 +1,15 @@
 const models = require("../../models");
 
-const voaMonitoringReport = async (req, res) => {
+const voaMonitoringSummaryCardReport = async (req, res) => {
   try {
+    const metric = req.query.metric;
     const startDate = req.query.start_date || null;
     const endDate = req.query.end_date || null;
-    const detailLimit = Number(req.query.detail_limit) || 25;
 
-    const result = await models.voaMonitoringReport({
+    const result = await models.voaMonitoringReport.getSummaryCard({
+      metric,
       startDate,
       endDate,
-      detailLimit,
     });
 
     res.status(200).json({
@@ -25,4 +25,4 @@ const voaMonitoringReport = async (req, res) => {
   }
 };
 
-module.exports = voaMonitoringReport;
+module.exports = voaMonitoringSummaryCardReport;

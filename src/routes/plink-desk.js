@@ -39,6 +39,8 @@ const {
   updateOnboardingRecordController,
   syncOnboardingRecordsController,
   exportOnboardingRecordsController,
+  listMpmQrisFilesController,
+  uploadMpmQrisFileController,
 } = require("../controller");
 
 const router = express.Router();
@@ -170,6 +172,15 @@ const onboardingParamsSchema = Joi.object({
   recordId: Joi.string().guid({ version: ["uuidv4", "uuidv5"] }).required(),
 });
 
+const mpmQrisQuerySchema = Joi.object({
+  page: Joi.number().integer().min(0).default(0),
+  size: Joi.number().integer().min(1).max(100).default(10),
+});
+
+const mpmQrisUploadSchema = Joi.object({
+  upload_date: Joi.string().pattern(/^\d{8}$/).required(),
+});
+
 router.get("/dashboard/summary", auth, authorize({ anyOf: ["plink-desk.dashboard.read"] }), getDashboardSummaryController);
 router.get("/categories", auth, authorize({ anyOf: ["plink-desk.tickets.read"] }), listTicketCategoriesController);
 router.get("/sops", auth, authorize({ anyOf: ["plink-desk.sops.read"] }), listTicketSopsController);
@@ -231,6 +242,21 @@ router.put(
   validator.params(onboardingParamsSchema),
   validator.body(onboardingPayloadSchema),
   updateOnboardingRecordController
+);
+router.get(
+  "/mpm-qris/files",
+  auth,
+  authorize({ anyOf: ["plink-desk.mpm-qris.read"] }),
+  validator.query(mpmQrisQuerySchema),
+  listMpmQrisFilesController
+);
+router.post(
+  "/mpm-qris/upload",
+  auth,
+  authorize({ anyOf: ["plink-desk.mpm-qris.create"] }),
+  upload.single("file"),
+  validator.body(mpmQrisUploadSchema),
+  uploadMpmQrisFileController
 );
 router.post("/import", auth, authorize({ anyOf: ["plink-desk.tickets.create"] }), upload.single("file"), importTicketWorkbookController);
 router.get("/sops/:sopId", auth, authorize({ anyOf: ["plink-desk.sops.read"] }), validator.params(sopParamsSchema), getTicketSopDetailController);

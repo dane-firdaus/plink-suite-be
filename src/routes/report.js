@@ -10,6 +10,9 @@ const {
     listProductTypesController,
     productSummaryTransactionsController,
     voaMonitoringReportController,
+    voaMonitoringSummaryCardReportController,
+    voaMonitoringDailySummaryReportController,
+    voaMonitoringIssueSamplesReportController,
     voaTransactionListReportController,
     voaTransactionSummaryCardReportController,
     voaTransactionSummaryReportController,
@@ -48,6 +51,32 @@ const voaMonitoringSchema = Joi.object({
     start_date: Joi.date().iso().optional(),
     end_date: Joi.date().iso().optional(),
     detail_limit: Joi.number().integer().min(1).max(500).default(100),
+});
+
+const voaMonitoringSummaryCardSchema = Joi.object({
+    metric: Joi.string().valid(
+        'period_health',
+        'period_issue_rate',
+        'potential_refund',
+        'failed_transaction',
+        'missing_ref_on_success',
+        'refunded',
+        'window_total_trx',
+        'window_issue_rate'
+    ).required(),
+    start_date: Joi.date().iso().optional(),
+    end_date: Joi.date().iso().optional(),
+});
+
+const voaMonitoringDailySummarySchema = Joi.object({
+    start_date: Joi.date().iso().optional(),
+    end_date: Joi.date().iso().optional(),
+});
+
+const voaMonitoringIssueSamplesSchema = Joi.object({
+    start_date: Joi.date().iso().optional(),
+    end_date: Joi.date().iso().optional(),
+    detail_limit: Joi.number().integer().min(1).max(100).default(25),
 });
 
 const voaTransactionListSchema = Joi.object({
@@ -114,6 +143,30 @@ router.get(
     authorize({ anyOf: ['plink-one.reports.read', 'plink-desk.reports.read'] }),
     validator.query(voaMonitoringSchema),
     voaMonitoringReportController
+);
+
+router.get(
+    '/voa-monitoring-summary-card',
+    auth,
+    authorize({ anyOf: ['plink-one.reports.read', 'plink-desk.reports.read'] }),
+    validator.query(voaMonitoringSummaryCardSchema),
+    voaMonitoringSummaryCardReportController
+);
+
+router.get(
+    '/voa-monitoring-daily-summary',
+    auth,
+    authorize({ anyOf: ['plink-one.reports.read', 'plink-desk.reports.read'] }),
+    validator.query(voaMonitoringDailySummarySchema),
+    voaMonitoringDailySummaryReportController
+);
+
+router.get(
+    '/voa-monitoring-issue-samples',
+    auth,
+    authorize({ anyOf: ['plink-one.reports.read', 'plink-desk.reports.read'] }),
+    validator.query(voaMonitoringIssueSamplesSchema),
+    voaMonitoringIssueSamplesReportController
 );
 
 router.get(

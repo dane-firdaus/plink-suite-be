@@ -18,9 +18,10 @@ const {
   forgotPasswordController,
 } = require("../controller");
 const validator = require("express-joi-validation").createValidator({});
+const WORKSPACE_IDS = ['plink-one', 'plink-desk', 'plink-crm', 'plink-recon', 'plink-books', 'plink-back-stage'];
 
 const workspaceMembershipSchema = Joi.object({
-    workspace_id: Joi.string().valid('plink-one', 'plink-desk', 'plink-crm', 'plink-recon', 'plink-books').required(),
+    workspace_id: Joi.string().valid(...WORKSPACE_IDS).required(),
     workspace_role: Joi.string().valid('admin', 'member').required(),
     privilege_codes: Joi.array().items(Joi.string().max(150)).required(),
     is_default: Joi.boolean().optional(),
@@ -66,9 +67,9 @@ const adminUserSchema = Joi.object({
     division_id: Joi.string().required().max(100),
     fullname: Joi.string().required().max(150),
     workspace_access: Joi.array().items(
-      Joi.string().valid('plink-one', 'plink-desk', 'plink-crm', 'plink-recon', 'plink-books')
+      Joi.string().valid(...WORKSPACE_IDS)
     ).min(1).required(),
-    default_workspace: Joi.string().valid('plink-one', 'plink-desk', 'plink-crm', 'plink-recon', 'plink-books').required(),
+    default_workspace: Joi.string().valid(...WORKSPACE_IDS).required(),
     workspace_memberships: Joi.array().items(workspaceMembershipSchema).min(1).optional(),
 });
 

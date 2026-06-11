@@ -18,6 +18,9 @@ const summaryTransactionsController = require("./report/summary-transaction.js")
 const listProductTypesController = require("./report/list-product-types.js");
 const productSummaryTransactionsController = require("./report/product-summary-transaction.js");
 const voaMonitoringReportController = require("./report/voa-monitoring-report.js");
+const voaMonitoringSummaryCardReportController = require("./report/voa-monitoring-summary-card-report.js");
+const voaMonitoringDailySummaryReportController = require("./report/voa-monitoring-daily-summary-report.js");
+const voaMonitoringIssueSamplesReportController = require("./report/voa-monitoring-issue-samples-report.js");
 const voaTransactionListReportController = require("./report/voa-transaction-list-report.js");
 const voaTransactionSummaryCardReportController = require("./report/voa-transaction-summary-card-report.js");
 const voaTransactionSummaryReportController = require("./report/voa-transaction-summary-report.js");
@@ -54,11 +57,32 @@ const createOnboardingRecordController = require("./plink-desk/create-onboarding
 const updateOnboardingRecordController = require("./plink-desk/update-onboarding-record.js");
 const syncOnboardingRecordsController = require("./plink-desk/sync-onboarding-records.js");
 const exportOnboardingRecordsController = require("./plink-desk/export-onboarding-records.js");
+const listMpmQrisFilesController = require("./plink-desk/list-mpm-qris-files.js");
+const uploadMpmQrisFileController = require("./plink-desk/upload-mpm-qris-file.js");
 const listSalesController = require("./crm/list-sales.js");
 const getSalesDetailController = require("./crm/get-sales-detail.js");
 const createSalesController = require("./crm/create-sales.js");
 const updateSalesController = require("./crm/update-sales.js");
 const deleteSalesController = require("./crm/delete-sales.js");
+const {
+    listBackstageProjectsController,
+    getBackstageProjectDetailController,
+    createBackstageProjectController,
+    updateBackstageProjectController,
+    deleteBackstageProjectController,
+} = require("./backstage/projects.js");
+const {
+    listBackstageTasksController,
+    getBackstageTaskDetailController,
+    createBackstageTaskController,
+    updateBackstageTaskController,
+    deleteBackstageTaskController,
+    createBackstageTaskUpdateController,
+} = require("./backstage/tasks.js");
+const { getBackstageDashboardSummaryController } = require("./backstage/dashboard.js");
+const getGithubOverviewController = require("./backstage/get-github-overview.js");
+const listGithubDirectoryController = require("./backstage/list-github-directory.js");
+const getGithubContentController = require("./backstage/get-github-content.js");
 
 module.exports = {
     createDivisionController,
@@ -81,6 +105,9 @@ module.exports = {
     listProductTypesController,
     productSummaryTransactionsController,
     voaMonitoringReportController,
+    voaMonitoringSummaryCardReportController,
+    voaMonitoringDailySummaryReportController,
+    voaMonitoringIssueSamplesReportController,
     voaTransactionListReportController,
     voaTransactionSummaryCardReportController,
     voaTransactionSummaryReportController,
@@ -117,9 +144,26 @@ module.exports = {
     updateOnboardingRecordController,
     syncOnboardingRecordsController,
     exportOnboardingRecordsController,
+    listMpmQrisFilesController,
+    uploadMpmQrisFileController,
     listSalesController,
     getSalesDetailController,
     createSalesController,
     updateSalesController,
-    deleteSalesController
+    deleteSalesController,
+    listBackstageProjectsController,
+    getBackstageProjectDetailController,
+    createBackstageProjectController,
+    updateBackstageProjectController,
+    deleteBackstageProjectController,
+    listBackstageTasksController,
+    getBackstageTaskDetailController,
+    createBackstageTaskController,
+    updateBackstageTaskController,
+    deleteBackstageTaskController,
+    createBackstageTaskUpdateController,
+    getBackstageDashboardSummaryController,
+    getGithubOverviewController,
+    listGithubDirectoryController,
+    getGithubContentController
 }

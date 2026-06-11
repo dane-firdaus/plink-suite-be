@@ -29,6 +29,8 @@ const PRIVILEGE_CATALOG = [
   { workspace_id: "plink-desk", feature_key: "onboarding", action: "create", code: "plink-desk.onboarding.create", label: "Create Onboarding" },
   { workspace_id: "plink-desk", feature_key: "onboarding", action: "update", code: "plink-desk.onboarding.update", label: "Update Onboarding" },
   { workspace_id: "plink-desk", feature_key: "onboarding", action: "delete", code: "plink-desk.onboarding.delete", label: "Delete Onboarding" },
+  { workspace_id: "plink-desk", feature_key: "mpm-qris", action: "read", code: "plink-desk.mpm-qris.read", label: "View MPM QRIS" },
+  { workspace_id: "plink-desk", feature_key: "mpm-qris", action: "create", code: "plink-desk.mpm-qris.create", label: "Upload MPM QRIS" },
   { workspace_id: "plink-desk", feature_key: "reports", action: "read", code: "plink-desk.reports.read", label: "View Reports" },
 
   { workspace_id: "plink-crm", feature_key: "sales", action: "read", code: "plink-crm.sales.read", label: "View Sales" },
@@ -43,6 +45,19 @@ const PRIVILEGE_CATALOG = [
   { workspace_id: "plink-recon", feature_key: "dashboard", action: "read", code: "plink-recon.dashboard.read", label: "View Dashboard" },
 
   { workspace_id: "plink-books", feature_key: "settlements", action: "read", code: "plink-books.settlements.read", label: "View Settlements" },
+
+  { workspace_id: "plink-back-stage", feature_key: "board", action: "read", code: "plink-back-stage.board.read", label: "View Delivery Board" },
+  { workspace_id: "plink-back-stage", feature_key: "projects", action: "read", code: "plink-back-stage.projects.read", label: "View Projects" },
+  { workspace_id: "plink-back-stage", feature_key: "projects", action: "create", code: "plink-back-stage.projects.create", label: "Create Projects" },
+  { workspace_id: "plink-back-stage", feature_key: "projects", action: "update", code: "plink-back-stage.projects.update", label: "Update Projects" },
+  { workspace_id: "plink-back-stage", feature_key: "projects", action: "delete", code: "plink-back-stage.projects.delete", label: "Delete Projects" },
+  { workspace_id: "plink-back-stage", feature_key: "tasks", action: "read", code: "plink-back-stage.tasks.read", label: "View Tasks" },
+  { workspace_id: "plink-back-stage", feature_key: "tasks", action: "create", code: "plink-back-stage.tasks.create", label: "Create Tasks" },
+  { workspace_id: "plink-back-stage", feature_key: "tasks", action: "update", code: "plink-back-stage.tasks.update", label: "Update Tasks" },
+  { workspace_id: "plink-back-stage", feature_key: "tasks", action: "delete", code: "plink-back-stage.tasks.delete", label: "Delete Tasks" },
+  { workspace_id: "plink-back-stage", feature_key: "task-updates", action: "read", code: "plink-back-stage.task-updates.read", label: "View Task Updates" },
+  { workspace_id: "plink-back-stage", feature_key: "task-updates", action: "create", code: "plink-back-stage.task-updates.create", label: "Create Task Updates" },
+  { workspace_id: "plink-back-stage", feature_key: "github", action: "read", code: "plink-back-stage.github.read", label: "View GitHub Insights" },
 ];
 
 const PRIVILEGE_CODE_SET = new Set(PRIVILEGE_CATALOG.map((item) => item.code));
@@ -124,6 +139,18 @@ const inferPrivilegeCodesFromLegacyRole = ({ roleName = "", workspaceAccess = []
       ...getAllPrivilegeCodesForWorkspace("plink-books"),
       "plink-one.reports.read",
     ];
+  }
+
+  if (
+    normalizedRole.includes("business analyst") ||
+    normalizedRole.includes("analyst") ||
+    normalizedRole.includes("project manager") ||
+    normalizedRole.includes("pm") ||
+    normalizedRole.includes("developer") ||
+    normalizedRole.includes("engineer") ||
+    normalizedRole.includes("product")
+  ) {
+    return getAllPrivilegeCodesForWorkspace("plink-back-stage");
   }
 
   return ["plink-one.dashboard.read"];
