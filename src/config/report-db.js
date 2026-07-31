@@ -12,7 +12,7 @@ const reportPool = new sql.ConnectionPool({
     encrypt: false,
   },
   connectionTimeout: 30000,
-  requestTimeout: 60000,
+  requestTimeout: 180000,
   pool: {
     max: 10,
     min: 0,

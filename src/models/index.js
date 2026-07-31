@@ -24,6 +24,10 @@ const voaTransactionListReport = require("./report/voa-transaction-list-report")
 const voaTransactionSummaryCardReport = require("./report/voa-transaction-summary-card-report");
 const voaTransactionSummaryReport = require("./report/voa-transaction-summary-report");
 const reconDashboardReport = require("./report/recon-dashboard-report");
+const reconDashboardOverviewReport = reconDashboardReport.getReconDashboardOverview;
+const reconDashboardSnapshotMetaReport = reconDashboardReport.getReconDashboardSnapshotMeta;
+const reconDashboardSummaryReport = reconDashboardReport.getReconDashboardSummaryCards;
+const reconDashboardTableReport = reconDashboardReport.getReconDashboardTable;
 const financeVipotReport = require("./report/finance-vipot-report");
 const financeVipotDetailReport = require("./report/finance-vipot-detail-report");
 const listTickets = require("./plink-desk/list-tickets");
@@ -104,6 +108,10 @@ module.exports = {
     voaTransactionSummaryCardReport,
     voaTransactionSummaryReport,
     reconDashboardReport,
+    reconDashboardOverviewReport,
+    reconDashboardSnapshotMetaReport,
+    reconDashboardSummaryReport,
+    reconDashboardTableReport,
     financeVipotReport,
     financeVipotDetailReport,
     listTickets,

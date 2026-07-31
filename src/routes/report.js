@@ -17,6 +17,10 @@ const {
     voaTransactionSummaryCardReportController,
     voaTransactionSummaryReportController,
     reconDashboardReportController,
+    reconDashboardOverviewReportController,
+    reconDashboardSnapshotMetaReportController,
+    reconDashboardSummaryReportController,
+    reconDashboardTableReportController,
     financeVipotReportController,
     financeVipotDetailReportController
 } = require("../controller");
@@ -190,6 +194,38 @@ router.get(
     auth,
     authorize({ anyOf: ['plink-one.reports.read', 'plink-desk.reports.read'] }),
     voaTransactionSummaryReportController
+);
+
+router.get(
+    '/recon-dashboard/overview',
+    auth,
+    authorize({ anyOf: ['plink-one.reports.read', 'plink-recon.dashboard.read'] }),
+    validator.query(reconDashboardSchema),
+    reconDashboardOverviewReportController
+);
+
+router.get(
+    '/recon-dashboard/snapshot-meta',
+    auth,
+    authorize({ anyOf: ['plink-one.reports.read', 'plink-recon.dashboard.read'] }),
+    validator.query(reconDashboardSchema),
+    reconDashboardSnapshotMetaReportController
+);
+
+router.get(
+    '/recon-dashboard/summary-cards',
+    auth,
+    authorize({ anyOf: ['plink-one.reports.read', 'plink-recon.dashboard.read'] }),
+    validator.query(reconDashboardSchema),
+    reconDashboardSummaryReportController
+);
+
+router.get(
+    '/recon-dashboard/table',
+    auth,
+    authorize({ anyOf: ['plink-one.reports.read', 'plink-recon.dashboard.read'] }),
+    validator.query(reconDashboardSchema),
+    reconDashboardTableReportController
 );
 
 router.get(

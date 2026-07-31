@@ -25,6 +25,10 @@ const voaTransactionListReportController = require("./report/voa-transaction-lis
 const voaTransactionSummaryCardReportController = require("./report/voa-transaction-summary-card-report.js");
 const voaTransactionSummaryReportController = require("./report/voa-transaction-summary-report.js");
 const reconDashboardReportController = require("./report/recon-dashboard-report.js");
+const reconDashboardOverviewReportController = require("./report/recon-dashboard-overview-report.js");
+const reconDashboardSnapshotMetaReportController = require("./report/recon-dashboard-snapshot-meta-report.js");
+const reconDashboardSummaryReportController = require("./report/recon-dashboard-summary-report.js");
+const reconDashboardTableReportController = require("./report/recon-dashboard-table-report.js");
 const financeVipotReportController = require("./report/finance-vipot-report.js");
 const financeVipotDetailReportController = require("./report/finance-vipot-detail-report.js");
 const listTicketsController = require("./plink-desk/list-tickets.js");
@@ -112,6 +116,10 @@ module.exports = {
     voaTransactionSummaryCardReportController,
     voaTransactionSummaryReportController,
     reconDashboardReportController,
+    reconDashboardOverviewReportController,
+    reconDashboardSnapshotMetaReportController,
+    reconDashboardSummaryReportController,
+    reconDashboardTableReportController,
     financeVipotReportController,
     financeVipotDetailReportController,
     listTicketsController,

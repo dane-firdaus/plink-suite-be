@@ -13,6 +13,7 @@ const plinkDeskRouter = require('./src/routes/plink-desk');
 const crmRouter = require('./src/routes/crm');
 const backstageRouter = require('./src/routes/backstage');
 const { startOnboardingSyncPolling } = require('./src/utils/onboarding-sync-poller');
+const reconDashboardReport = require('./src/models/report/recon-dashboard-report');
 
 const port = process.env.PORT || 3099;
 app.use(cors());
@@ -50,4 +51,7 @@ app.get('/', (req, res) => {
 http.createServer(app).listen(port, () => {
     console.log(`Server is running on port ${port}`);
     startOnboardingSyncPolling();
+    setTimeout(() => {
+        reconDashboardReport.warmReconDashboardCache?.();
+    }, 1000);
 })
